@@ -6,7 +6,7 @@ Working repository for a pixel art game a la "[Vampire Survivors](https://store.
 2. Clone the repository and set up a python virtual environment (I develop using venv): `python -m venv venv`
 
 3. Install the necessary dependencies from the requirements.txt in the project:
-   - First you must activate the virtual envionment (if using the command line from an IDE like Pycharm, it will automatically do this for you): `venv\Scripts\activate`
-   - Install the requirements: `pip install -r requirements.txt`
+   - First you must activate the virtual envionment: `venv\Scripts\activate` (if using the command line from an IDE like Pycharm, it will automatically do this for you)
+   - Install the requirements into your virtual environment: `pip install -r requirements.txt`
   
 4. The current state of the game can be run by launching main.py
