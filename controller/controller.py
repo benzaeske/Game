@@ -1,6 +1,10 @@
 import sys
+import time
 
+import numpy as np
 import pygame
+
+from model.shapes import Square
 
 
 class Game:
@@ -10,29 +14,55 @@ class Game:
         """Initialize a new game with display set to full screen and 60 FPS"""
         pygame.init()
         self.DISPLAY_INFO = pygame.display.Info()
-        self.WIDTH = self.DISPLAY_INFO.current_w
-        self.HEIGHT = self.DISPLAY_INFO.current_h
+        self.DISPLAY_W, self.DISPLAY_H = (
+            self.DISPLAY_INFO.current_w,
+            self.DISPLAY_INFO.current_h,
+        )
         self.BACKGROUND_COLOR = (255, 255, 255)
+        self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
+        self.background = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H))
+        self.background.fill(self.BACKGROUND_COLOR)
         self.FPS = 60
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
-        self.entities = []
+        self.prev_frame_start = time.time()
+        self.dt = 0
+        # Track input vectors
+        self.up = self.down = self.left = self.right = 0
+        # Initialize a player at the middle
+        self.player = Square(50, (0, 102, 0))
+        self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
+        # Initialize entities to draw
+        self.entities = [self.player]
 
     def add_entity(self, entity):
         self.entities.append(entity)
 
-    @staticmethod
-    def process_inputs():
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
-            sys.exit()
+    def process_inputs(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            sys.exit()
+        self.move_player(
+            keys[pygame.K_UP],
+            keys[pygame.K_DOWN],
+            keys[pygame.K_LEFT],
+            keys[pygame.K_RIGHT],
+        )
+
+    def move_player(self, up, down, left, right):
+        x = right - left
+        y = up - down
+        magnitude = self.player.speed * self.dt
+        if x != 0 and y != 0:
+            magnitude = np.sqrt(np.power(magnitude, 2) / 2)
+        self.player.move(magnitude * x, magnitude * y)
 
     def draw_background(self):
         # White background
-        self.screen.fill(self.BACKGROUND_COLOR)
+        self.background.fill(self.BACKGROUND_COLOR)
+        self.screen.blit(self.background, (0, 0))
 
     def draw_entities(self):
         for entity in self.entities:
@@ -45,10 +75,13 @@ class Game:
         3. draws entities
         4. updates screen and sets FPS"""
         while True:
+            self.clock.tick(self.FPS)
+
+            now = time.time()
+            self.dt = now - self.prev_frame_start
+            self.prev_frame_start = now
+
             self.process_inputs()
             self.draw_background()
             self.draw_entities()
-            # Display changes
             pygame.display.update()
-            # Drive FPS
-            self.clock.tick(self.FPS)

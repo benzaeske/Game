@@ -9,6 +9,7 @@ class Entity:
     def __init__(self, rect, surface):
         self.rect = rect
         self.surface = surface
+        self.speed = 500
 
     def get_rect(self):
         return self.rect
@@ -20,3 +21,7 @@ class Entity:
         """Updates the bottom left position of the entity's rectangular hitbox"""
         self.rect.left = x
         self.rect.bottom = y
+
+    def move(self, x, y):
+        self.rect.left = self.rect.left + x
+        self.rect.bottom = self.rect.bottom - y
