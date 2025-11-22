@@ -3,6 +3,7 @@ import time
 
 import pygame
 
+from model.horde import Horde
 from model.shapes import Square
 
 
@@ -21,18 +22,18 @@ class Game:
         self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
         self.background = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H))
         self.background.fill(self.BACKGROUND_COLOR)
+        # Global FPS and clock
         self.FPS = 60
         self.clock = pygame.time.Clock()
-        self.prev_frame_start = time.time()
-        self.dt = 0
+        self.game_start = 0
         # Initialize a player at the middle
-        self.player = Square(50, (0, 102, 0))
+        self.player = Square(50, (0, 102, 0), 500)
         self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
-        # Initialize entities to draw
-        self.entities = [self.player]
-
-    def add_entity(self, entity):
-        self.entities.append(entity)
+        # Initialize a list of enemy entities
+        self.enemies = []
+        # Initialize a horde
+        self.red_horde = Horde(3, self.DISPLAY_W, self.DISPLAY_H)
+        self.hordes_spawned = 0
 
     @staticmethod
     def check_for_terminate():
@@ -50,36 +51,58 @@ class Game:
 
     def draw_background(self):
         """Re-draws the background but only over the list of entities on screen"""
-        for entity in self.entities:
-            self.screen.blit(self.background, entity.get_rect())
+        self.screen.blit(self.background, self.player.get_rect())
+        for enemy in self.enemies:
+            self.screen.blit(self.background, enemy.get_rect())
 
-    def update_player(self):
+    def update_player(self, dt):
         keys = pygame.key.get_pressed()
         self.player.move_with_unit_vector(
             keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
             keys[pygame.K_UP] - keys[pygame.K_DOWN],
-            self.dt,
+            dt,
         )
 
+    def update_enemies(self, dt):
+        for enemy in self.enemies:
+            # Move the enemy towards the player along a straight line drawn between their centers
+            enemy.move_with_unit_vector(
+                self.player.get_rect().centerx - enemy.get_rect().centerx,
+                -1 * (self.player.get_rect().centery - enemy.get_rect().centery),
+                dt,
+            )
+
+    def manage_hordes(self):
+        # spawn a horde every 10 seconds
+        game_time = time.time() - self.game_start
+        if game_time / 10 > self.hordes_spawned:
+            self.enemies.extend(self.red_horde.spawn_entities())
+            self.hordes_spawned += 1
+
     def draw_entities(self):
-        for entity in self.entities:
-            self.screen.blit(entity.get_surface(), entity.get_rect())
+        self.screen.blit(self.player.get_surface(), self.player.get_rect())
+        for enemy in self.enemies:
+            self.screen.blit(enemy.get_surface(), enemy.get_rect())
 
     def run(self):
         """Run the game loop"""
         self.fill_background()
+        # Track game run time
+        self.game_start = prev_frame_start = time.time()
         while True:
-            self.clock.tick(self.FPS)
-
             # Calculate delta time
             now = time.time()
-            self.dt = now - self.prev_frame_start
-            self.prev_frame_start = now
+            dt = now - prev_frame_start
+            prev_frame_start = now
 
             self.check_for_terminate()
 
             # Update game by a single frame
             self.draw_background()
-            self.update_player()
+            self.update_player(dt)
+            self.update_enemies(dt)
+            self.manage_hordes()
             self.draw_entities()
             pygame.display.update()
+
+            self.clock.tick(self.FPS)

@@ -1,7 +1,8 @@
 from utils import calculate_unit_vector
+from abc import ABC, abstractmethod
 
 
-class Entity:
+class Entity(ABC):
     """The most basic unit for representing an entity in the game.
 
      Contains positional information in the form of a basic rectangular hitbox. Currently represented as a pygame.rect
@@ -9,10 +10,10 @@ class Entity:
     Contains a surface that represents the entity as it will be drawn on the screen. Currently represented by a pygame.Surface that fills the entity's rect hitbox
     """
 
-    def __init__(self, rect, surface):
+    def __init__(self, rect, surface, speed):
         self.rect = rect
         self.surface = surface
-        self.speed = 500
+        self.speed = speed
 
     def get_rect(self):
         return self.rect
@@ -39,3 +40,8 @@ class Entity:
         magnitude = self.speed * dt
         movement_vec = uv * magnitude
         self.move(movement_vec[0], movement_vec[1])
+
+    @abstractmethod
+    def draw(self, screen):
+        """Draws this entity on the screen"""
+        pass
