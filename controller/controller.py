@@ -25,8 +25,6 @@ class Game:
         self.clock = pygame.time.Clock()
         self.prev_frame_start = time.time()
         self.dt = 0
-        # Track input vectors
-        self.up = self.down = self.left = self.right = 0
         # Initialize a player at the middle
         self.player = Square(50, (0, 102, 0))
         self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
@@ -36,44 +34,52 @@ class Game:
     def add_entity(self, entity):
         self.entities.append(entity)
 
-    def process_inputs(self):
+    @staticmethod
+    def check_for_terminate():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
             sys.exit()
-        self.player.move_with_vector(
-            (
-                keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
-                keys[pygame.K_UP] - keys[pygame.K_DOWN],
-            ),
-            self.dt,
-        )
 
-    def draw_background(self):
-        # White background
+    def fill_background(self):
+        """Fills the whole screen by re drawing the entire background"""
         self.background.fill(self.BACKGROUND_COLOR)
         self.screen.blit(self.background, (0, 0))
+
+    def draw_background(self):
+        """Re-draws the background but only over the list of entities on screen"""
+        for entity in self.entities:
+            self.screen.blit(self.background, entity.get_rect())
+
+    def update_player(self):
+        keys = pygame.key.get_pressed()
+        self.player.move_with_unit_vector(
+            keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+            keys[pygame.K_UP] - keys[pygame.K_DOWN],
+            self.dt,
+        )
 
     def draw_entities(self):
         for entity in self.entities:
             self.screen.blit(entity.get_surface(), entity.get_rect())
 
     def run(self):
-        """Run the game loop
-        1. looks at keyboard inputs
-        2. draws a solid background
-        3. draws entities
-        4. updates screen and sets FPS"""
+        """Run the game loop"""
+        self.fill_background()
         while True:
             self.clock.tick(self.FPS)
 
+            # Calculate delta time
             now = time.time()
             self.dt = now - self.prev_frame_start
             self.prev_frame_start = now
 
-            self.process_inputs()
+            self.check_for_terminate()
+
+            # Update game by a single frame
             self.draw_background()
+            self.update_player()
             self.draw_entities()
             pygame.display.update()

@@ -1,4 +1,4 @@
-import numpy
+from utils import calculate_unit_vector
 
 
 class Entity:
@@ -6,7 +6,7 @@ class Entity:
 
      Contains positional information in the form of a basic rectangular hitbox. Currently represented as a pygame.rect
 
-    Contains a surface that represents the entity as it will appear on the screen. Currently represented by a pygame.Surface
+    Contains a surface that represents the entity as it will be drawn on the screen. Currently represented by a pygame.Surface that fills the entity's rect hitbox
     """
 
     def __init__(self, rect, surface):
@@ -25,15 +25,17 @@ class Entity:
         self.rect.left = x
         self.rect.bottom = y
 
-    def move(self, x, y):
-        self.rect.left = self.rect.left + x
-        self.rect.bottom = self.rect.bottom - y
+    def move(self, x: int, y: int):
+        """Moves the entity's bottom left position by the amount specified by the inputs.
+        Inputs are automatically rounded to the nearest integer"""
+        self.rect.left = self.rect.left + int(round(x))
+        self.rect.bottom = self.rect.bottom - int(round(y))
 
-    def move_with_vector(self, vector, dt):
-        """Moves this entity according to the angle calculated by the input vector: (x, y).
-        The distance moved is calculated with this object's speed and the input delta time
+    def move_with_unit_vector(self, vec_x: int, vec_y: int, dt: float):
+        """Moves this entity in the direction of the unit vector calculated by the input vector x and y.
+        Moves with magnitude equal to this entity's speed multiplied by input delta time
         """
-        angle = numpy.arctan2(vector[1], vector[0])
-        x_diff = round(numpy.cos(angle), 10) * self.speed * dt * abs(vector[0])
-        y_diff = round(numpy.sin(angle), 10) * self.speed * dt * abs(vector[1])
-        self.move(x_diff, y_diff)
+        uv = calculate_unit_vector(vec_x, vec_y)
+        magnitude = self.speed * dt
+        movement_vec = uv * magnitude
+        self.move(movement_vec[0], movement_vec[1])
