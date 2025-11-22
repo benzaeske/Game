@@ -1,7 +1,6 @@
 import sys
 import time
 
-import numpy as np
 import pygame
 
 from model.shapes import Square
@@ -44,20 +43,13 @@ class Game:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
             sys.exit()
-        self.move_player(
-            keys[pygame.K_UP],
-            keys[pygame.K_DOWN],
-            keys[pygame.K_LEFT],
-            keys[pygame.K_RIGHT],
+        self.player.move_with_vector(
+            (
+                keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+                keys[pygame.K_UP] - keys[pygame.K_DOWN],
+            ),
+            self.dt,
         )
-
-    def move_player(self, up, down, left, right):
-        x = right - left
-        y = up - down
-        magnitude = self.player.speed * self.dt
-        if x != 0 and y != 0:
-            magnitude = np.sqrt(np.power(magnitude, 2) / 2)
-        self.player.move(magnitude * x, magnitude * y)
 
     def draw_background(self):
         # White background
