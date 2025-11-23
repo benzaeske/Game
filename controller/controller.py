@@ -3,8 +3,8 @@ import time
 
 import pygame
 
+from model.gridspace import GridSpace
 from model.horde import Horde
-from model.shapes import Square
 
 
 class Game:
@@ -13,26 +13,42 @@ class Game:
     def __init__(self):
         """Initialize a new game with display set to full screen and 60 FPS"""
         pygame.init()
+
+        # Global dimensions
         self.DISPLAY_INFO = pygame.display.Info()
         self.DISPLAY_W, self.DISPLAY_H = (
             self.DISPLAY_INFO.current_w,
             self.DISPLAY_INFO.current_h,
         )
+        self.SCREEN_SIZE = (
+            self.DISPLAY_W if self.DISPLAY_W < self.DISPLAY_H else self.DISPLAY_H
+        )
         self.BACKGROUND_COLOR = (255, 255, 255)
-        self.screen = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
-        self.background = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H))
+
+        # Screen variables
+        self.screen = pygame.display.set_mode(
+            (self.SCREEN_SIZE, self.SCREEN_SIZE), pygame.FULLSCREEN | pygame.SCALED
+        )
+        self.background = pygame.Surface((self.SCREEN_SIZE, self.SCREEN_SIZE))
         self.background.fill(self.BACKGROUND_COLOR)
+
         # Global FPS and clock
         self.FPS = 60
         self.clock = pygame.time.Clock()
         self.game_start = 0
+
+        # Grid system
+        self.grid_space = GridSpace(self.DISPLAY_W, self.DISPLAY_H, 5)
+
         # Initialize a player at the middle
-        self.player = Square(50, (0, 102, 0), 500)
-        self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
+        # self.player = Square(50, (0, 102, 0), 500)
+        # self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
+
         # Initialize a list of enemy entities
         self.enemies = []
+
         # Initialize a horde
-        self.red_horde = Horde(3, self.DISPLAY_W, self.DISPLAY_H)
+        self.red_horde = Horde(30, self.SCREEN_SIZE, self.SCREEN_SIZE)
         self.hordes_spawned = 0
 
     @staticmethod
@@ -51,7 +67,7 @@ class Game:
 
     def draw_background(self):
         """Re-draws the background but only over the list of entities on screen"""
-        self.screen.blit(self.background, self.player.get_rect())
+        # self.screen.blit(self.background, self.player.get_rect())
         for enemy in self.enemies:
             self.screen.blit(self.background, enemy.get_rect())
 
@@ -65,10 +81,10 @@ class Game:
 
     def update_enemies(self, dt):
         for enemy in self.enemies:
-            # Move the enemy towards the player along a straight line drawn between their centers
             enemy.move_with_unit_vector(
-                self.player.get_rect().centerx - enemy.get_rect().centerx,
-                -1 * (self.player.get_rect().centery - enemy.get_rect().centery),
+                self.grid_space.get_force_vector_at_position(
+                    enemy.get_rect().centerx, enemy.get_rect().centery
+                ),
                 dt,
             )
 
@@ -80,7 +96,7 @@ class Game:
             self.hordes_spawned += 1
 
     def draw_entities(self):
-        self.screen.blit(self.player.get_surface(), self.player.get_rect())
+        # self.screen.blit(self.player.get_surface(), self.player.get_rect())
         for enemy in self.enemies:
             self.screen.blit(enemy.get_surface(), enemy.get_rect())
 
@@ -99,7 +115,6 @@ class Game:
 
             # Update game by a single frame
             self.draw_background()
-            self.update_player(dt)
             self.update_enemies(dt)
             self.manage_hordes()
             self.draw_entities()

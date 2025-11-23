@@ -1,5 +1,8 @@
-from utils import calculate_unit_vector
 from abc import ABC, abstractmethod
+
+from numpy.typing import NDArray
+
+from utils import calculate_unit_vector
 
 
 class Entity(ABC):
@@ -30,9 +33,13 @@ class Entity(ABC):
         """Moves the entity's bottom left position by the amount specified by the inputs.
         Inputs are automatically rounded to the nearest integer"""
         self.rect.left = self.rect.left + int(round(x))
-        self.rect.bottom = self.rect.bottom - int(round(y))
+        self.rect.bottom = self.rect.bottom + int(round(y))
 
-    def move_with_unit_vector(self, vec_x: int, vec_y: int, dt: float):
+    def move_with_unit_vector(self, vector: NDArray[float], dt: float):
+        magnitude = self.speed * dt
+        self.move(vector[0] * magnitude, vector[1] * magnitude)
+
+    def move_with_vec_components(self, vec_x: int, vec_y: int, dt: float):
         """Moves this entity in the direction of the unit vector calculated by the input vector x and y.
         Moves with magnitude equal to this entity's speed multiplied by input delta time
         """
