@@ -6,23 +6,23 @@ from model.entity import Entity
 class Square(Entity):
     """Initializes a square Entity with edge size and color"""
 
-    def __init__(self, size, color, speed):
-        self.size = size
-        self.color = color
+    def __init__(self, size, color, mass):
+        self._size = size
+        self._color = color
         super().__init__(
-            pygame.Rect(0, 0, self.size, self.size),
-            pygame.Surface((self.size, self.size)),
-            speed,
+            pygame.Rect(0, 0, self._size, self._size),
+            pygame.Surface((self._size, self._size)),
+            mass,
         )
-        self.surface.fill(self.color)
+        self._surface.fill(self._color)
 
     def set_size(self, size):
-        self.rect.width = size
-        self.rect.height = size
+        self._rect.width = size
+        self._rect.height = size
 
     def set_color(self, color):
-        self.color = color
-        self.surface.fill(self.color)
+        self._color = color
+        self._surface.fill(self._color)
 
     def draw(self, screen):
-        screen.blit(self.surface, self.rect)
+        screen.blit(self._surface, self._rect)

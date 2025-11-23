@@ -3,8 +3,8 @@ import time
 
 import pygame
 
+from model.entitygroup import SquareGroup
 from model.gridspace import GridSpace
-from model.horde import Horde
 
 
 class Game:
@@ -25,7 +25,7 @@ class Game:
         )
         self.BACKGROUND_COLOR = (255, 255, 255)
 
-        # Screen variables
+        # Global screen variables
         self.screen = pygame.display.set_mode(
             (self.SCREEN_SIZE, self.SCREEN_SIZE), pygame.FULLSCREEN | pygame.SCALED
         )
@@ -40,16 +40,25 @@ class Game:
         # Grid system
         self.grid_space = GridSpace(self.DISPLAY_W, self.DISPLAY_H, 5)
 
-        # Initialize a player at the middle
-        # self.player = Square(50, (0, 102, 0), 500)
-        # self.player.set_position(self.DISPLAY_W / 2, self.DISPLAY_H / 2)
+        # Initialize a game state
+        self._entities = []
+        self._entity_groups = []
 
-        # Initialize a list of enemy entities
-        self.enemies = []
+    def add_entity(self, entity):
+        self._entities.append(entity)
 
-        # Initialize a horde
-        self.red_horde = Horde(30, self.SCREEN_SIZE, self.SCREEN_SIZE)
-        self.hordes_spawned = 0
+    def add_square_group(self, magnitude, color, size, mass, frequency):
+        self._entity_groups.append(
+            SquareGroup(
+                magnitude,
+                self.SCREEN_SIZE,
+                self.SCREEN_SIZE,
+                color,
+                size,
+                mass,
+                frequency,
+            )
+        )
 
     @staticmethod
     def check_for_terminate():
@@ -67,38 +76,27 @@ class Game:
 
     def draw_background(self):
         """Re-draws the background but only over the list of entities on screen"""
-        # self.screen.blit(self.background, self.player.get_rect())
-        for enemy in self.enemies:
-            self.screen.blit(self.background, enemy.get_rect())
+        for entity in self._entities:
+            self.screen.blit(self.background, entity.get_rect())
 
-    def update_player(self, dt):
-        keys = pygame.key.get_pressed()
-        self.player.move_with_unit_vector(
-            keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
-            keys[pygame.K_UP] - keys[pygame.K_DOWN],
-            dt,
-        )
-
-    def update_enemies(self, dt):
-        for enemy in self.enemies:
-            enemy.move_with_unit_vector(
+    def update_entities(self, dt):
+        for entity in self._entities:
+            entity.move_with_unit_vector(
                 self.grid_space.get_force_vector_at_position(
-                    enemy.get_rect().centerx, enemy.get_rect().centery
+                    entity.get_rect().centerx, entity.get_rect().centery
                 ),
                 dt,
             )
 
-    def manage_hordes(self):
-        # spawn a horde every 10 seconds
-        game_time = time.time() - self.game_start
-        if game_time / 10 > self.hordes_spawned:
-            self.enemies.extend(self.red_horde.spawn_entities())
-            self.hordes_spawned += 1
+    def manage_entity_groups(self, dt):
+        for entity_group in self._entity_groups:
+            entity_group.tick(dt)
+            if entity_group.can_spawn():
+                self._entities.extend(entity_group.spawn())
 
     def draw_entities(self):
-        # self.screen.blit(self.player.get_surface(), self.player.get_rect())
-        for enemy in self.enemies:
-            self.screen.blit(enemy.get_surface(), enemy.get_rect())
+        for entity in self._entities:
+            self.screen.blit(entity.get_surface(), entity.get_rect())
 
     def run(self):
         """Run the game loop"""
@@ -115,8 +113,8 @@ class Game:
 
             # Update game by a single frame
             self.draw_background()
-            self.update_enemies(dt)
-            self.manage_hordes()
+            self.update_entities(dt)
+            self.manage_entity_groups(dt)
             self.draw_entities()
             pygame.display.update()
 
