@@ -36,7 +36,6 @@ class Entity(ABC):
     def move_with_unit_vector(self, vector: NDArray[float], dt: float):
         magnitude = self._mass * dt
         self.move(vector[0] * magnitude, vector[1] * magnitude)
-        print(vector)
 
     @abstractmethod
     def draw(self, screen):

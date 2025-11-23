@@ -9,8 +9,8 @@ class EntityGroup(ABC):
 
     def __init__(self, frequency):
         self._frequency = frequency
-        self._time_period = 0
-        self._can_spawn = False
+        self._time_period = frequency
+        self._can_spawn = True
 
     def tick(self, dt):
         self._time_period += dt
