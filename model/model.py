@@ -5,9 +5,11 @@ import pygame
 from pygame import Vector2, Rect, Surface
 
 # Flocking settings
-neighbor_dist: float = 132.0
-separate_dist: float = 66.0
+neighbor_dist: float = 66.0
+separate_dist: float = 33.0
 separate_k = 1.8
+align_k: float = 1.0
+cohere_k = 1.0
 
 
 class Model:
@@ -61,17 +63,15 @@ class GameEntity:
         self.position.x = (self.position.x + screen_w) % screen_w
         self.position.y = (self.position.y + screen_h) % screen_h
         self.acceleration *= 0.0
-        if self.velocity.magnitude() >= self.max_speed:
-            print(self.velocity.x, self.velocity.y, self.velocity.magnitude())
 
     def apply_forces(self, entities: list["GameEntity"]) -> None:
         """
         Calculates this GameEntity's acceleration for the current frame.\n
-        Acceleration is removed at the end of each frame and must be continually applied.
+        Acceleration is removed at the end of each frame by default
         """
-        self.calculate_flocking_forces(entities)
+        self.apply_flocking_forces(entities)
 
-    def calculate_flocking_forces(self, flock: list["GameEntity"]) -> None:
+    def apply_flocking_forces(self, flock: list["GameEntity"]) -> None:
         sum_separate: Vector2 = Vector2(0.0, 0.0)
         sum_align: Vector2 = Vector2(0.0, 0.0)
         sum_cohere: Vector2 = Vector2(0.0, 0.0)
@@ -91,6 +91,11 @@ class GameEntity:
                 count_s += 1
         if count_s > 0:
             self.target(sum_separate, separate_k)
+        if count_n > 0:
+            self.target(sum_align, align_k)
+            sum_cohere /= float(count_n)
+            sum_cohere -= self.position
+            self.target(sum_cohere, cohere_k)
 
     def target(self, target_dir: Vector2, k: float) -> None:
         target_dir.normalize_ip()
@@ -129,8 +134,8 @@ class RandomSquareAgent(GameEntity):
         surface = pygame.Surface((self.size, self.size))
         surface.fill(color)
         starting_velocity = Vector2(
-            random.randint(0, int(velocity)),
-            random.randint(0, int(velocity)),
+            random.randint(-int(velocity), int(velocity)),
+            random.randint(-int(velocity), int(velocity)),
         )
         if starting_velocity.magnitude() != 0.0:
             starting_velocity.clamp_magnitude_ip(velocity, velocity)

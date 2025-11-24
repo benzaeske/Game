@@ -31,6 +31,8 @@ class GameController:
         self.draw_game_entities()
         self.view.update_screen()
         self.dt = self.clock.tick(self.fps) / 1000
+        if self.dt > 0.017:  # Print when we drop below 60 fps
+            print("dt dropped below 60 fps:", self.dt)
 
     @staticmethod
     def check_for_terminate():
