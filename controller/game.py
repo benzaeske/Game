@@ -1,8 +1,6 @@
-import sys
 import time
 
 import pygame
-
 from model.entitygroup import SquareGroup
 from model.gridspace import GridSpace
 
@@ -59,15 +57,6 @@ class Game:
                 frequency,
             )
         )
-
-    @staticmethod
-    def check_for_terminate():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
-            sys.exit()
 
     def fill_background(self):
         """Fills the whole screen by re drawing the entire background"""

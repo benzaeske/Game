@@ -1,5 +1,4 @@
-from controller.game import Game
+from controller.controller import GameController
 
-game = Game()
-game.add_square_group(5, (0, 200, 0), 33, 10, 2)
-game.run()
+controller = GameController()
+controller.start()
