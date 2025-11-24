@@ -1,44 +1,80 @@
+from typing import Tuple
+
 import numpy as np
-from numpy.typing import NDArray
+import pygame
+from pygame import Vector2, Rect, Surface
 
 
 class Model:
-    def __init__(self, width, height):
-        self.width: int = width
-        self.height: int = height
-        self.entities: list[ModelEntity] = []
+    def __init__(self, screen_width, screen_height):
+        self.screen_width: int = screen_width
+        self.screen_height: int = screen_height
+        self.entities: list[GameEntity] = []
 
         print("Initialized model")
 
     def update_model(self, dt: float) -> None:
         for entity in self.entities:
-            entity.update(dt)
+            entity.apply_forces(self.entities)
+            entity.update(self.screen_width, self.screen_height, dt)
 
 
-class ModelEntity:
+class GameEntity:
+
     def __init__(
         self,
-        width: float = 10.0,
-        height: float = 10.0,
-        start_pos: NDArray[float] = np.array([0, 0]),
-        start_v: NDArray[float] = np.array([0, 0]),
-        start_a: NDArray[float] = np.array([0, 0]),
-        velocity_limit: float = 2.0,
+        surface: Surface,
+        width: float = 20.0,
+        height: float = 20.0,
+        start_pos: Vector2 = Vector2(0.0, 0.0),
+        start_v: Vector2 = Vector2(0.0, 0.0),
+        velocity_limit: float = 5.0,
+        fixed_acceleration: Vector2 = None,
     ):
+        self.surface: Surface = surface
         self.width: float = width
         self.height: float = height
-        self.position: NDArray[float] = start_pos
-        self.velocity: NDArray[float] = start_v
-        self.acceleration: NDArray[float] = start_a
+        self.pos_display_adjust: Vector2 = Vector2(self.width / 2, self.height / 2)
+        # Physics-related variables:
+        self.position: Vector2 = start_pos
+        self.velocity: Vector2 = start_v
+        self.acceleration: Vector2 = Vector2(0.0, 0.0)
+        self.fixed_acceleration: Vector2 = fixed_acceleration
         self.max_velocity: float = velocity_limit
 
-    def update(self, dt: float) -> None:
+    def update(self, screen_w: float, screen_h: float, dt: float) -> None:
+        """
+        Updates entities for a single frame.\n
+        All coordinates are assumed to represent the center of entities and have an inverted y-axis as dictated by pygame.
+
+        """
         self.velocity += self.acceleration
-        self.limit_velocity()
-        self.position += self.velocity
+        self.velocity.clamp_magnitude(self.max_velocity)
+        self.position += self.velocity * dt
+        self.position.x = (self.position.x + screen_w) % screen_w
+        self.position.y = (self.position.y + screen_h) % screen_h
         self.acceleration = np.array([0, 0])
 
-    def limit_velocity(self):
-        magnitude = np.linalg.norm(self.velocity)
-        if magnitude > self.max_velocity:
-            self.velocity = self.velocity / magnitude
+    def apply_forces(self, entities: list["GameEntity"]) -> None:
+        """
+        Calculates this GameEntity's acceleration for the current frame.\n
+        Acceleration is removed at the end of each frame and must be continually applied.
+        """
+        if self.fixed_acceleration is not None:
+            self.acceleration = self.fixed_acceleration
+
+    def get_rect(self) -> Rect:
+        """
+        Gets a pygame.Rect that has adjusted coordinates for pygame.blit
+        """
+        # Adjust the position from the middle of the object to the top left corner
+        adjusted_pos: Vector2 = self.position - self.pos_display_adjust
+        return pygame.Rect(adjusted_pos.x, adjusted_pos.y, self.width, self.height)
+
+    def get_display_adjusted_pos(self) -> Tuple[float, float]:
+        """
+        Gets a tuple of floats that are ready to use as coordinates for a pygame.blit
+        """
+        # Adjust the position from the middle of the object to the top left corner
+        adjusted_pos: Vector2 = self.position - self.pos_display_adjust
+        return adjusted_pos.x, adjusted_pos.y

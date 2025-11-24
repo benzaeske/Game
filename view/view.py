@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import pygame
-from pygame import Surface, Rect
+from pygame import Surface
 
 
 class View:
@@ -43,14 +43,9 @@ class View:
     def draw_background(self, destination: Tuple[int, int] = (0, 0)) -> None:
         self.screen.blit(self.background, destination)
 
-    def draw_surface(self, surface: Surface, dest: Rect) -> None:
+    def draw_surface(self, surface: Surface, dest: Tuple[float, float]) -> None:
         self.screen.blit(surface, dest)
 
     @staticmethod
     def update_screen() -> None:
         pygame.display.update()
-
-
-class ViewEntity:
-    def __init__(self, surface: Surface, position: Rect):
-        self.surface: Surface = surface
