@@ -1,3 +1,4 @@
+import random
 from typing import Tuple
 
 import numpy as np
@@ -49,7 +50,8 @@ class GameEntity:
 
         """
         self.velocity += self.acceleration
-        self.velocity.clamp_magnitude(self.max_velocity)
+        if self.velocity.magnitude() != 0.0:
+            self.velocity.clamp_magnitude(self.max_velocity)
         self.position += self.velocity * dt
         self.position.x = (self.position.x + screen_w) % screen_w
         self.position.y = (self.position.y + screen_h) % screen_h
@@ -78,3 +80,32 @@ class GameEntity:
         # Adjust the position from the middle of the object to the top left corner
         adjusted_pos: Vector2 = self.position - self.pos_display_adjust
         return adjusted_pos.x, adjusted_pos.y
+
+
+class RandomSquareAgent(GameEntity):
+    """
+    A white square with a random starting position and a random starting velocity of magnitude equal to the specified limit
+    """
+
+    def __init__(self, size, velocity, screen_w, screen_h):
+        self.size = size
+        color = (255, 255, 255)
+        surface = pygame.Surface((self.size, self.size))
+        surface.fill(color)
+        starting_velocity = Vector2(
+            random.randint(0, int(velocity)),
+            random.randint(0, int(velocity)),
+        )
+        if starting_velocity.magnitude() != 0.0:
+            starting_velocity.clamp_magnitude_ip(velocity, velocity)
+        super().__init__(
+            surface,
+            self.size,
+            self.size,
+            Vector2(
+                random.randint(int(self.size / 2), screen_w - int(self.size / 2)),
+                random.randint(int(self.size / 2), screen_h - int(self.size / 2)),
+            ),
+            starting_velocity,
+            velocity,
+        )

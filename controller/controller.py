@@ -1,9 +1,7 @@
 import sys
 import time
-from typing import Tuple
 
 import pygame
-from pygame import Vector2
 from pygame.time import Clock
 
 from model.model import Model, GameEntity
@@ -18,6 +16,7 @@ class GameController:
         self.clock: Clock = pygame.time.Clock()
         self.fps = fps
         self.game_start: float = -1
+        self.dt = 0
 
     def start_game(self):
         self.game_start = time.time()
@@ -27,14 +26,11 @@ class GameController:
 
     def do_game_loop(self) -> None:
         self.check_for_terminate()
-        # delta time in milliseconds of the last 2 clock.tick calls
-        dt = self.clock.get_time() / 1000
-        print(dt)
-        self.update_model(dt)
+        self.update_model()
         self.draw_background()
         self.draw_game_entities()
         self.view.update_screen()
-        self.clock.tick(self.fps)
+        self.dt = self.clock.tick(self.fps) / 1000
 
     @staticmethod
     def check_for_terminate():
@@ -45,8 +41,8 @@ class GameController:
         if keys[pygame.K_ESCAPE]:
             sys.exit()
 
-    def update_model(self, dt: float) -> None:
-        self.model.update_model(dt)
+    def update_model(self) -> None:
+        self.model.update_model(self.dt)
 
     def draw_background(self) -> None:
         self.view.draw_background()
@@ -57,26 +53,3 @@ class GameController:
 
     def add_game_entity(self, entity: GameEntity) -> None:
         self.model.entities.append(entity)
-
-    def create_square_entity(
-        self,
-        size: float,
-        color: Tuple[int, int, int],
-        start_pos: Vector2 = Vector2(0.0, 0.0),
-        start_v: Vector2 = Vector2(0.0, 0.0),
-        velocity_limit: float = 5.0,
-        fixed_acceleration: Vector2 = None,
-    ) -> None:
-        surface = pygame.Surface((size, size))
-        surface.fill(color)
-        self.add_game_entity(
-            GameEntity(
-                surface,
-                size,
-                size,
-                start_pos,
-                start_v,
-                velocity_limit,
-                fixed_acceleration,
-            )
-        )

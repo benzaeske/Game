@@ -1,18 +1,19 @@
-from pygame import Vector2
-
 from controller.controller import GameController
+from model.model import RandomSquareAgent
 
 game_controller = GameController()
 
-for x in range(0, 25):
-    for y in range(0, 25):
-        game_controller.create_square_entity(
-            50,
-            (0, 255 - (x * 5) - (y * 5), 0),
-            Vector2(x * 60 + 25.0, y * 60 + 25.0),
-            Vector2(5.0, -1.0),
-            25.0,
-            Vector2(2.5, 0.5),
+num_agents = 33
+agent_size = 33
+agent_speed = 33.0
+for x in range(0, num_agents):
+    game_controller.add_game_entity(
+        RandomSquareAgent(
+            agent_size,
+            agent_speed,
+            game_controller.view.screen_width,
+            game_controller.view.screen_height,
         )
+    )
 
 game_controller.start_game()
