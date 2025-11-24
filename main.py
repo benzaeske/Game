@@ -3,7 +3,7 @@ from model.model import RandomSquareAgent
 
 game_controller = GameController()
 
-num_agents = 33
+num_agents = 100
 agent_size = 33
 agent_speed = 33.0
 for x in range(0, num_agents):
