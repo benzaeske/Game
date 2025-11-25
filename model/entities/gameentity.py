@@ -18,6 +18,7 @@ class GameEntity:
         start_v: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 5.0,
         max_force: float = 0.3,
+        group_id: int = -1,  # It can be useful for certain flocking behavior to keep track of groups of GameEntities. -1 indicates the GameEntity does not have a group
     ):
         self.surface: Surface = surface
         self.width: float = width
@@ -30,6 +31,7 @@ class GameEntity:
         self.acceleration: Vector2 = Vector2(0.0, 0.0)
         self.max_speed: float = max_speed
         self.max_force: float = max_force
+        self.group_id: int = group_id
 
     def update_position(self, screen_w: float, screen_h: float, dt: float) -> None:
         """

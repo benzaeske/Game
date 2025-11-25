@@ -20,12 +20,14 @@ class FlockingParameters:
         cohere_k: float,
         avoid_k: float,
         align_k: float,
+        flock_id: int = 0,
     ) -> None:
         self.cohere_distance: float = cohere_distance
         self.avoid_distance: float = avoid_distance
         self.cohere_k: float = cohere_k
         self.avoid_k: float = avoid_k
         self.align_k: float = align_k
+        self.flock_id: int = flock_id
 
 
 class Boid(GameEntity):
@@ -46,7 +48,14 @@ class Boid(GameEntity):
         self.avoid_k: float = flocking_parameters.avoid_k
         self.align_k: float = flocking_parameters.align_k
         super().__init__(
-            surface, width, height, start_pos, start_v, max_speed, max_force
+            surface,
+            width,
+            height,
+            start_pos,
+            start_v,
+            max_speed,
+            max_force,
+            flocking_parameters.flock_id,
         )
 
     def apply_forces(self, entities: list[GameEntity]) -> None:
