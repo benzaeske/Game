@@ -12,12 +12,12 @@ class GameEntity:
     def __init__(
         self,
         surface: Surface,
-        width: float = 20.0,
-        height: float = 20.0,
+        width: float = 1.0,
+        height: float = 1.0,
         start_pos: Vector2 = Vector2(0.0, 0.0),
         start_v: Vector2 = Vector2(0.0, 0.0),
-        max_speed: float = 5.0,
-        max_force: float = 0.3,
+        max_speed: float = 1.0,
+        max_force: float = 0.1,
         group_id: int = -1,  # It can be useful for certain flocking behavior to keep track of groups of GameEntities. -1 indicates the GameEntity does not have a group
     ):
         self.surface: Surface = surface
