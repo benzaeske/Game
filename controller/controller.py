@@ -52,7 +52,7 @@ class GameController:
     def fps_logging(self, model_t: float, view_t: float) -> None:
         if self.dt > self.max_dt:
             print(
-                "Frame dropped below",
+                "Frame dt was too slow to meet",
                 self.fps,
                 "fps. dt:",
                 self.dt,
@@ -60,6 +60,7 @@ class GameController:
                 model_t,
                 "\nView update time ms:",
                 view_t,
+                "\n",
             )
 
     def update_model(self) -> None:
@@ -67,6 +68,7 @@ class GameController:
 
     def draw_background(self) -> None:
         self.view.draw_background()
+        self.view.print_fps(self.clock.get_fps())
 
     def draw_game_entities(self) -> None:
         for entity in self.model.entities:
