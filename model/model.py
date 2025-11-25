@@ -1,4 +1,5 @@
 import random
+import time
 from typing import Tuple
 
 import pygame
@@ -9,7 +10,7 @@ neighbor_dist: float = 66.0
 separate_dist: float = 33.0
 separate_k = 1.8
 align_k: float = 1.0
-cohere_k = 1.0
+cohere_k = 1.5
 
 
 class Model:
@@ -21,6 +22,7 @@ class Model:
         print("Initialized model")
 
     def update_model(self, dt: float) -> None:
+        start = time.time()
         for entity in self.entities:
             entity.apply_forces(self.entities)
             entity.update_position(self.screen_width, self.screen_height, dt)
@@ -98,7 +100,8 @@ class GameEntity:
             self.target(sum_cohere, cohere_k)
 
     def target(self, target_dir: Vector2, k: float) -> None:
-        target_dir.normalize_ip()
+        if target_dir.magnitude() != 0.0:
+            target_dir.normalize_ip()
         target_dir *= self.max_speed
         target_dir -= self.velocity
         if target_dir.magnitude() != 0.0:
