@@ -11,6 +11,13 @@ from model.utils.vectorutils import limit_magnitude
 class FlockingParameters:
     """
     Parameters for controlling how an entity behaves with its flock
+    :param cohere_distance: The maximum distance at which boids will try to cohere with their 'friends'
+    :param avoid_distance: The maximum distance at which boids will try to avoid their neighbors
+    :param cohere_k: A constant that represents how much a boid will prioritize cohering with friends
+    :param align_k: A constant that represents how much a boid will prioritize aligning with friends
+    :param flock_id: Unique identifier for a flock. Currently not used, but will be used to have multiple flocks that don't cohere to each other
+    :param target_mouse: Whether the flock will move towards the mouse - temporary for testing
+    :param target_k: How much the boids will prioritize moving towards their 'target' (currently just the mouse) - temporary for testing
     """
 
     def __init__(

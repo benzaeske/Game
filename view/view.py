@@ -7,9 +7,15 @@ from pygame.font import Font
 
 
 class View:
+    """
+    The View is responsible for drawing everything on the screen using pygame functions, but should know nothing about the size or shape of the model it is drawing
+    """
+
     def __init__(self, background_color: Tuple[int, int, int] = (0, 0, 0)):
         # Screen sizing
         display_info = pygame.display.Info()
+        # Display width/height currently matches world width/height and setting manually.
+        # This will eventually change to only display part of the world and run at full screen
         self._display_width: int = 2500
         self._display_height: int = 1400
         self.screen: Surface = self._get_screen()

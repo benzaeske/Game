@@ -12,11 +12,25 @@ from view.view import View
 
 
 class GameController:
-    def __init__(self, fps: int = 60) -> None:
+    """
+    Orchestration class for running the current state of the game. Contains a model which is the simulated world and a view that is responsible for drawing on the screen.
+    In the current implementation, the simulated world and the screen size are the same, but eventually the screen will only be displaying part of a larger simulation.
+    :param world_width: The size of the world model. This must be divisible by the grid cell size
+    :param world_height: The size of the world model. This must be divisible by the grid cell size
+    :param grid_cell_size: The map will be divided into grids of this size. In order for flocking to work, must be at least as large as the smallest coherence radius of the boids being used
+    """
+
+    def __init__(
+        self,
+        world_width: float = 1000.0,
+        world_height: float = 600.0,
+        grid_cell_size: float = 100.0,
+        fps: int = 60,
+    ) -> None:
         pygame.init()
         self.view: View = View()
         self.model: SpatialPartitioningModel = SpatialPartitioningModel(
-            self.view.screen_width, self.view.screen_height, 100
+            world_width, world_height, grid_cell_size
         )
         self.clock: Clock = pygame.time.Clock()
         self.fps: int = fps
@@ -24,6 +38,7 @@ class GameController:
         self.dt: float = 0.0
         # Used to trigger logging when dt exceeds the max value required for 60fps
         self.max_dt: float = 0.017
+        # Tracking mouse pos in case I want it for input
         self.mouse_pos: Tuple[int, int] = (0, 0)
 
     def start_game(self):
@@ -44,8 +59,6 @@ class GameController:
         view_update_time = time.time() - view_update_time
         self.view.update_screen()
         self.dt = self.clock.tick(self.fps) / 1000
-        # Print info when dt indicates we dropped below 60 fps
-        self.fps_logging(model_update_time, view_update_time)
 
     @staticmethod
     def check_for_terminate():
@@ -75,6 +88,7 @@ class GameController:
 
     def draw_background(self) -> None:
         self.view.draw_background()
+        # Display FPS in top left
         self.view.print_fps(self.clock.get_fps())
 
     def draw_game_entities(self) -> None:

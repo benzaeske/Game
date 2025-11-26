@@ -1,7 +1,10 @@
 from controller.controller import GameController
 from model.entities.boid import BoidFactory, FlockingParameters
 
-game_controller = GameController()
+world_width = 2500
+world_height = 1400
+cell_size = 100.0
+game_controller = GameController(world_width, world_height, cell_size)
 
 num_agents = 800
 agent_size = 11.0
@@ -9,7 +12,7 @@ agent_speed = 200.0
 max_acceleration = 1.0
 
 # Flocking settings
-cohere_dist = 66.0
+cohere_dist = 100.0
 avoid_dist = 33.0
 cohere_k = 1.0
 avoid_k = 1.8
