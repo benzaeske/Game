@@ -1,3 +1,5 @@
+from pygame import Vector2
+
 from model.entities.gameentity import GameEntity
 
 
@@ -9,7 +11,7 @@ class Model:
 
         print("Initialized model")
 
-    def update_model(self, dt: float) -> None:
+    def update_model(self, dt: float, mouse_pos: Vector2) -> None:
         for entity in self.entities:
-            entity.apply_forces(self.entities)
+            entity.apply_forces(self.entities, mouse_pos)
             entity.update_position(self.screen_width, self.screen_height, dt)

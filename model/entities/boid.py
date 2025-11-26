@@ -17,10 +17,12 @@ class FlockingParameters:
         self,
         cohere_distance: float,
         avoid_distance: float,
-        cohere_k: float,
-        avoid_k: float,
-        align_k: float,
-        flock_id: int = 0,
+        cohere_k: float = 1.0,
+        avoid_k: float = 1.5,
+        align_k: float = 1.0,
+        flock_id: int = -1,
+        target_mouse: bool = False,
+        target_k: float = 1.0,
     ) -> None:
         self.cohere_distance: float = cohere_distance
         self.avoid_distance: float = avoid_distance
@@ -28,6 +30,8 @@ class FlockingParameters:
         self.avoid_k: float = avoid_k
         self.align_k: float = align_k
         self.flock_id: int = flock_id
+        self.target_mouse: bool = target_mouse
+        self.target_k: float = target_k
 
 
 class Boid(GameEntity):
@@ -40,13 +44,15 @@ class Boid(GameEntity):
         start_pos: Vector2,
         start_v: Vector2,
         max_speed: float,
-        max_force: float,
+        max_acceleration: float,
     ) -> None:
         self.cohere_distance: float = flocking_parameters.cohere_distance
         self.avoid_distance: float = flocking_parameters.avoid_distance
         self.cohere_k: float = flocking_parameters.cohere_k
         self.avoid_k: float = flocking_parameters.avoid_k
         self.align_k: float = flocking_parameters.align_k
+        self.target_mouse: bool = flocking_parameters.target_mouse
+        self.target_k: float = flocking_parameters.target_k
         super().__init__(
             surface,
             width,
@@ -54,12 +60,14 @@ class Boid(GameEntity):
             start_pos,
             start_v,
             max_speed,
-            max_force,
+            max_acceleration,
             flocking_parameters.flock_id,
         )
 
-    def apply_forces(self, entities: list[GameEntity]) -> None:
+    def apply_forces(self, entities: list[GameEntity], mouse_pos: Vector2) -> None:
         self.apply_flocking_forces(entities)
+        if self.target_mouse:
+            self.target_location(mouse_pos)
 
     def apply_flocking_forces(self, others: list[GameEntity]) -> None:
         """
@@ -94,6 +102,13 @@ class Boid(GameEntity):
             sum_cohere -= self.position
             self.target(sum_cohere, self.cohere_k)
 
+    def target_location(self, target_location: Vector2) -> None:
+        """
+        Tells this Boid to target a specific location in addition to its normal flocking behavior
+        """
+        diff = target_location - self.position
+        self.target(diff, self.target_k)
+
 
 class BoidFactory:
     """
@@ -108,7 +123,7 @@ class BoidFactory:
         width: float,
         height: float,
         max_speed: float,
-        max_force: float,
+        max_acceleration: float,
         position_x_range: Tuple[float, float],
         position_y_range: Tuple[float, float],
         color: Tuple[int, int, int] = (255, 255, 255),
@@ -117,7 +132,7 @@ class BoidFactory:
         self.width: float = width
         self.height: float = height
         self.max_speed: float = max_speed
-        self.max_force: float = max_force
+        self.max_acceleration: float = max_acceleration
         self.position_x_range: Tuple[float, float] = position_x_range
         self.position_y_range: Tuple[float, float] = position_y_range
         self.color: Tuple[int, int, int] = color
@@ -144,5 +159,5 @@ class BoidFactory:
             ),
             start_velocity,
             self.max_speed,
-            self.max_force,
+            self.max_acceleration,
         )

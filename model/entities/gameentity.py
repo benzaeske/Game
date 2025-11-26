@@ -17,7 +17,7 @@ class GameEntity:
         start_pos: Vector2 = Vector2(0.0, 0.0),
         start_v: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 1.0,
-        max_force: float = 0.1,
+        max_acceleration: float = 0.1,
         group_id: int = -1,  # It can be useful for certain flocking behavior to keep track of groups of GameEntities. -1 indicates the GameEntity does not have a group
     ):
         self.surface: Surface = surface
@@ -30,14 +30,16 @@ class GameEntity:
         self.velocity: Vector2 = start_v
         self.acceleration: Vector2 = Vector2(0.0, 0.0)
         self.max_speed: float = max_speed
-        self.max_force: float = max_force
+        self.max_acceleration: float = max_acceleration
+        self.max_acceleration: float = max_acceleration
         self.group_id: int = group_id
 
-    def apply_forces(self, entities: list["GameEntity"]) -> None:
+    def apply_forces(self, entities: list["GameEntity"], mouse_pos: Vector2) -> None:
         """
         Called in the model's update loop for each entity in the simulation.
         By default, GameEntities don't get any forces applied to them. If you want to automatically apply forces to a GameObject in the model's update loop you have to extend the class and override this method.
         :param entities: List of GameObject entities that are within range to interact with this entity when calculated forces on it
+        :param mouse_pos: The current mouse position for this frame
         """
         pass
 
@@ -61,7 +63,7 @@ class GameEntity:
         safe_normalize(target_dir)
         target_dir *= self.max_speed
         target_dir -= self.velocity
-        limit_magnitude(target_dir, self.max_force)
+        limit_magnitude(target_dir, self.max_acceleration)
         target_dir *= k
         self.acceleration += target_dir
 

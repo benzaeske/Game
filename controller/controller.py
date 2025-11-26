@@ -1,7 +1,9 @@
 import sys
 import time
+from typing import Tuple
 
 import pygame
+from pygame import Vector2
 from pygame.time import Clock
 
 from model.model import Model, GameEntity
@@ -19,6 +21,7 @@ class GameController:
         self.dt: float = 0.0
         # Used to trigger logging when dt exceeds the max value required for 60fps
         self.max_dt: float = 0.017
+        self.mouse_pos: Tuple[int, int] = (0, 0)
 
     def start_game(self):
         self.game_start = time.time()
@@ -28,6 +31,7 @@ class GameController:
 
     def do_game_loop(self) -> None:
         self.check_for_terminate()
+        self.mouse_pos = pygame.mouse.get_pos()
         model_update_time = time.time()
         self.update_model()
         model_update_time = time.time() - model_update_time
@@ -64,7 +68,7 @@ class GameController:
             )
 
     def update_model(self) -> None:
-        self.model.update_model(self.dt)
+        self.model.update_model(self.dt, Vector2(self.mouse_pos))
 
     def draw_background(self) -> None:
         self.view.draw_background()
