@@ -6,7 +6,8 @@ import pygame
 from pygame import Vector2
 from pygame.time import Clock
 
-from model.model import Model, GameEntity
+from model.model import GameEntity
+from model.spatial_partitioning_model import SpatialPartitioningModel
 from view.view import View
 
 
@@ -14,7 +15,9 @@ class GameController:
     def __init__(self, fps: int = 60) -> None:
         pygame.init()
         self.view: View = View()
-        self.model: Model = Model(self.view.screen_width, self.view.screen_height)
+        self.model: SpatialPartitioningModel = SpatialPartitioningModel(
+            self.view.screen_width, self.view.screen_height, 100
+        )
         self.clock: Clock = pygame.time.Clock()
         self.fps: int = fps
         self.game_start: float = -1
@@ -75,8 +78,12 @@ class GameController:
         self.view.print_fps(self.clock.get_fps())
 
     def draw_game_entities(self) -> None:
-        for entity in self.model.entities:
-            self.view.draw_surface(entity.surface, entity.get_display_adjusted_pos())
+        for row in range(self.model.grid_height):
+            for col in range(self.model.grid_width):
+                for entity in self.model.grid_space[row][col]:
+                    self.view.draw_surface(
+                        entity.surface, entity.get_display_adjusted_pos()
+                    )
 
     def add_game_entity(self, entity: GameEntity) -> None:
-        self.model.entities.append(entity)
+        self.model.add_game_entity(entity)

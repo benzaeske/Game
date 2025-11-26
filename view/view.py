@@ -10,8 +10,8 @@ class View:
     def __init__(self, background_color: Tuple[int, int, int] = (0, 0, 0)):
         # Screen sizing
         display_info = pygame.display.Info()
-        self._display_width: int = display_info.current_w
-        self._display_height: int = display_info.current_h
+        self._display_width: int = 2500
+        self._display_height: int = 1400
         self.screen: Surface = self._get_screen()
         # Get dimensions from created screen
         self.screen_width: int = self.screen.get_width()
@@ -36,9 +36,7 @@ class View:
         )
 
     def _get_screen(self) -> Surface:
-        return pygame.display.set_mode(
-            (self._display_width, self._display_height), pygame.FULLSCREEN
-        )
+        return pygame.display.set_mode((self._display_width, self._display_height))
 
     def _get_background(self) -> Surface:
         background = pygame.Surface((self.screen_width, self.screen_height))
