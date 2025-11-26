@@ -83,6 +83,7 @@ class Boid(GameEntity):
         count_n: int = 0
         count_s: int = 0
         for other in others:
+            # TODO add check to make sure not to check this entity against itself
             d: float = self.position.distance_to(other.position)
             if (d > 0) and d < self.cohere_distance:
                 sum_align += other.velocity

@@ -14,4 +14,5 @@ class Model:
     def update_model(self, dt: float, mouse_pos: Vector2) -> None:
         for entity in self.entities:
             entity.apply_forces(self.entities, mouse_pos)
+        for entity in self.entities:
             entity.update_position(self.screen_width, self.screen_height, dt)
