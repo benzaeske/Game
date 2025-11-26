@@ -22,19 +22,30 @@ class SpatialPartitioningModel:
         ]
 
     def update_model(self, dt: float, mouse_pos: Vector2) -> None:
+        # Apply forces to all entities
         for row in range(self.grid_height):
             for col in range(self.grid_width):
                 for entity in self.grid_space[row][col]:
                     self.apply_forces_to_entity(entity, mouse_pos)
+        # Move entities and update their location in the grid space if it has changed.
+        # This must be done after all forces have already been applied to each entity's velocity
         for row in range(self.grid_height):
             for col in range(self.grid_width):
-                for entity in self.grid_space[row][col]:
-                    entity.update_position(self.world_width, self.world_height, dt)
+                for i in range(len(self.grid_space[row][col])):
+                    e = self.grid_space[row][col][i]
+                    e.update_position(self.world_width, self.world_height, dt)
+                    # Check if we are in a new grid cell and move this entity to that grid cell's list if so
+                    new_r = int(e.position.y / self.cell_size)
+                    new_c = int(e.position.x / self.cell_size)
+                    if new_r != row or new_c != col:
+                        del self.grid_space[row][col][i]
+                        self.grid_space[new_r][new_c].append(e)
 
     def apply_forces_to_entity(self, entity: GameEntity, mouse_pos: Vector2) -> None:
         """
         Finds this entity's relevant neighbors and applies forces using only the list of relevant neighbors
         """
+        # Relevant neighbors are any entities in the 'cell_range' grid squares surrounding the current entity's grid square
         cell_range: int = 1
         neighbors: list[GameEntity] = []
         r: int = int(entity.position.y / self.cell_size)
