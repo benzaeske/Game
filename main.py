@@ -6,7 +6,7 @@ game_controller = GameController()
 num_agents = 300
 agent_size = 11.0
 agent_speed = 100.0
-max_force = 0.4
+max_force = 1.0
 
 # Flocking settings
 cohere_dist = 66.0

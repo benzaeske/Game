@@ -69,7 +69,7 @@ class Boid(GameEntity):
         #. Each entity moves towards the average position of other entities in its coherence range.\n
         :param others: Other boid entities that forces on this entity will be calculated with
         """
-        sum_separate: Vector2 = Vector2(0.0, 0.0)
+        sum_avoid: Vector2 = Vector2(0.0, 0.0)
         sum_align: Vector2 = Vector2(0.0, 0.0)
         sum_cohere: Vector2 = Vector2(0.0, 0.0)
         count_n: int = 0
@@ -84,10 +84,10 @@ class Boid(GameEntity):
                 diff: Vector2 = self.position - other.position
                 diff.normalize_ip()
                 diff /= d
-                sum_separate += diff
+                sum_avoid += diff
                 count_s += 1
         if count_s > 0:
-            self.target(sum_separate, self.avoid_k)
+            self.target(sum_avoid, self.avoid_k)
         if count_n > 0:
             self.target(sum_align, self.align_k)
             sum_cohere /= float(count_n)

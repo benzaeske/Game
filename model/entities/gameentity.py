@@ -33,6 +33,14 @@ class GameEntity:
         self.max_force: float = max_force
         self.group_id: int = group_id
 
+    def apply_forces(self, entities: list["GameEntity"]) -> None:
+        """
+        Called in the model's update loop for each entity in the simulation.
+        By default, GameEntities don't get any forces applied to them. If you want to automatically apply forces to a GameObject in the model's update loop you have to extend the class and override this method.
+        :param entities: List of GameObject entities that are within range to interact with this entity when calculated forces on it
+        """
+        pass
+
     def update_position(self, screen_w: float, screen_h: float, dt: float) -> None:
         """
         Updates entities for a single frame.\n
@@ -45,14 +53,6 @@ class GameEntity:
         self.position.x = (self.position.x + screen_w) % screen_w
         self.position.y = (self.position.y + screen_h) % screen_h
         self.acceleration *= 0.0
-
-    def apply_forces(self, entities: list["GameEntity"]) -> None:
-        """
-        Called in the model's update loop for each entity in the simulation.
-        By default, GameEntities don't get any forces applied to them. If you want to automatically apply forces to a GameObject in the model's update loop you have to extend the class and override this method.
-        :param entities: List of GameObject entities that are within range to interact with this entity when calculated forces on it
-        """
-        pass
 
     def target(self, target_dir: Vector2, k: float) -> None:
         """
