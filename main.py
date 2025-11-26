@@ -3,19 +3,19 @@ from model.entities.boid import BoidFactory, FlockingParameters
 
 game_controller = GameController()
 
-num_agents = 300
+num_agents = 100
 agent_size = 11.0
 agent_speed = 200.0
-max_acceleration = 1.5
+max_acceleration = 1.0
 
 # Flocking settings
 cohere_dist = 66.0
 avoid_dist = 33.0
 cohere_k = 1.0
-avoid_k = 2.0
+avoid_k = 1.8
 align_k = 1.0
 target_mouse = True
-target_k = 1.5
+target_k = 1.0
 
 boid_factory = BoidFactory(
     FlockingParameters(

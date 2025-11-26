@@ -67,7 +67,7 @@ class Boid(GameEntity):
     def apply_forces(self, entities: list[GameEntity], mouse_pos: Vector2) -> None:
         self.apply_flocking_forces(entities)
         if self.target_mouse:
-            self.target_location(mouse_pos)
+            self.flock_to_mouse(mouse_pos)
 
     def apply_flocking_forces(self, others: list[GameEntity]) -> None:
         """
@@ -102,12 +102,13 @@ class Boid(GameEntity):
             sum_cohere -= self.position
             self.target(sum_cohere, self.cohere_k)
 
-    def target_location(self, target_location: Vector2) -> None:
-        """
-        Tells this Boid to target a specific location in addition to its normal flocking behavior
-        """
+    def flock_to_mouse(self, target_location: Vector2) -> None:
         diff = target_location - self.position
-        self.target(diff, self.target_k)
+        d = self.position.distance_to(target_location)
+        if d > 200:
+            self.target(diff, self.target_k)
+        else:
+            self.target(diff, -1 * self.target_k)
 
 
 class BoidFactory:
