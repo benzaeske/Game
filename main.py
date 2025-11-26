@@ -3,7 +3,7 @@ from model.entities.boid import BoidFactory, FlockingParameters
 
 game_controller = GameController()
 
-num_agents = 100
+num_agents = 300
 agent_size = 11.0
 agent_speed = 200.0
 max_acceleration = 1.0
