@@ -2,7 +2,7 @@ Working repository for a pixel art game a la "[Vampire Survivors](https://store.
 
 The current state of the game is a Boid's algorithm simulation that uses spatial partioning to get increased efficiency when calculating forces between a large amount of entities.
 
-At a glance, Boid's algorithm was developed to simulate the flocking behavior of birds or fish. There is no overarching control or logic that is being applied to every entity. Instead each entity follows 3 simple rules that are calculated by neighbors that it can 'see':
+At a glance, Boid's algorithm was developed to simulate the flocking behavior of birds or fish. There is no overarching control or logic that is being applied to every entity at once. Instead each entity decides how to move in each frame following 3 simple rules:
 1. Each entity attempts to move towards the average position of its neighbors.  In the code, this is called coherence
 2. Each entity attempts to align its velocity with that of its neighbors. In the code, this is called alignment
 3. Each entity attempts to avoid neighbors that are very close. In the code, this is called avoidance
