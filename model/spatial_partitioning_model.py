@@ -1,8 +1,10 @@
 from typing import Tuple
 
 from pygame import Vector2
+from pygame.key import ScancodeWrapper
 
 from model.entities.gameentity import GameEntity
+from model.entities.player import Player
 
 
 class SpatialPartitioningModel:
@@ -17,6 +19,7 @@ class SpatialPartitioningModel:
         world_width: float,
         world_height: float,
         cell_size: float,
+        player: Player,
     ):
         self.world_width: float = world_width
         self.world_height: float = world_height
@@ -26,8 +29,12 @@ class SpatialPartitioningModel:
         self.grid_space: list[list[list[GameEntity]]] = [
             [[] for _ in range(self.grid_width)] for _ in range(self.grid_height)
         ]
+        self.player: Player = player
 
-    def update_model(self, dt: float, mouse_pos: Vector2) -> None:
+    def update_model(
+        self, dt: float, mouse_pos: Vector2, key_presses: ScancodeWrapper
+    ) -> None:
+        # TODO check for collisions
         # Apply forces to all entities
         for row in range(self.grid_height):
             for col in range(self.grid_width):
@@ -52,6 +59,8 @@ class SpatialPartitioningModel:
         # This must be done after all entities have moved otherwise we run the risk of processing an entity's position update twice
         for cell_entity in update_cells:
             self.grid_space[cell_entity[0]][cell_entity[1]].append(cell_entity[2])
+        # Move player
+        self.player.move_player(key_presses, dt)
 
     def apply_forces_to_entity(self, entity: GameEntity, mouse_pos: Vector2) -> None:
         """
@@ -75,3 +84,31 @@ class SpatialPartitioningModel:
         self.grid_space[int(entity.position.y / self.cell_size)][
             int(entity.position.x / self.cell_size)
         ].append(entity)
+
+    def get_entities_in_range(
+        self, x_range: Tuple[float, float], y_range: Tuple[float, float]
+    ) -> list[GameEntity]:
+        """
+        Finds the grid cells that are within the x, y range specified and returns all entities in those grid cells
+        """
+        left: int = int(x_range[0] / self.cell_size)
+        right: int = int(x_range[1] / self.cell_size)
+        bottom: int = int(y_range[0] / self.cell_size)
+        top: int = int(y_range[1] / self.cell_size)
+        entities: list[GameEntity] = []
+        for r in range(bottom, top + 1):
+            for c in range(left, right + 1):
+                entities.extend(self.grid_space[r][c])
+        return entities
+
+    def get_entities_in_camera_range(self):
+        return self.get_entities_in_range(
+            (
+                self.player.position.x - self.player.camera_w_adjust,
+                self.player.position.x + self.player.camera_w_adjust,
+            ),
+            (
+                self.player.position.y - self.player.camera_h_adjust,
+                self.player.position.y + self.player.camera_h_adjust,
+            ),
+        )

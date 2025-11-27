@@ -1,17 +1,23 @@
-from controller.controller import GameController
+from controller.controller import GameController, ControllerOptions
 from model.entities.boid import BoidFactory, FlockingParameters
 
-world_width = 2500
-world_height = 1400
+world_width = 10000
+world_height = 10000
 cell_size = 100.0
-game_controller = GameController(world_width, world_height, cell_size)
+background_color = (0, 0, 0)
 
-num_agents = 800
+game_controller = GameController(
+    ControllerOptions(world_width, world_height, cell_size, background_color)
+)
+
+# Boid options
+num_agents = 2000
 agent_size = 11.0
-agent_speed = 200.0
+agent_speed = 300.0
 max_acceleration = 1.0
+entity_color = (255, 255, 255)
 
-# Flocking settings
+# Flocking parameters
 cohere_dist = 100.0
 avoid_dist = 33.0
 cohere_k = 1.0
@@ -34,8 +40,9 @@ boid_factory = BoidFactory(
     agent_size,
     agent_speed,
     max_acceleration,
-    (0.0, game_controller.view.screen_width),
-    (0.0, game_controller.view.screen_height),
+    (0.0, game_controller.model.world_width),
+    (0.0, game_controller.model.world_height),
+    entity_color,
 )
 
 for x in range(0, num_agents):

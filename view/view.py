@@ -11,13 +11,16 @@ class View:
     The View is responsible for drawing everything on the screen using pygame functions, but should know nothing about the size or shape of the model it is drawing
     """
 
-    def __init__(self, background_color: Tuple[int, int, int] = (0, 0, 0)):
+    def __init__(
+        self,
+        background_color: Tuple[int, int, int] = (0, 0, 0),
+    ):
         # Screen sizing
         display_info = pygame.display.Info()
         # Display width/height currently matches world width/height and setting manually.
         # This will eventually change to only display part of the world and run at full screen
-        self._display_width: int = 2500
-        self._display_height: int = 1400
+        self._display_width: int = display_info.current_w
+        self._display_height: int = display_info.current_h
         self.screen: Surface = self._get_screen()
         # Get dimensions from created screen
         self.screen_width: int = self.screen.get_width()
@@ -42,7 +45,12 @@ class View:
         )
 
     def _get_screen(self) -> Surface:
-        return pygame.display.set_mode((self._display_width, self._display_height))
+        """
+        Get a full screen matching display width and height
+        """
+        return pygame.display.set_mode(
+            (self._display_width, self._display_height), pygame.FULLSCREEN
+        )
 
     def _get_background(self) -> Surface:
         background = pygame.Surface((self.screen_width, self.screen_height))

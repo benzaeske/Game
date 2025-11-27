@@ -43,7 +43,7 @@ class GameEntity:
         """
         pass
 
-    def update_position(self, screen_w: float, screen_h: float, dt: float) -> None:
+    def update_position(self, world_w: float, world_h: float, dt: float) -> None:
         """
         Updates entities for a single frame.\n
         All coordinates are assumed to represent the center of entities and have an inverted y-axis\n
@@ -52,8 +52,8 @@ class GameEntity:
         self.velocity += self.acceleration
         limit_magnitude(self.velocity, self.max_speed)
         self.position += self.velocity * dt
-        self.position.x = (self.position.x + screen_w) % screen_w
-        self.position.y = (self.position.y + screen_h) % screen_h
+        self.position.x = (self.position.x + world_w) % world_w
+        self.position.y = (self.position.y + world_h) % world_h
         self.acceleration *= 0.0
 
     def target(self, target_dir: Vector2, k: float) -> None:
@@ -82,6 +82,17 @@ class GameEntity:
         # Adjust the position from the middle of the object to the top left corner
         adjusted_pos: Vector2 = self.position - self.pos_display_adjust
         return adjusted_pos.x, adjusted_pos.y
+
+    def get_camera_adjusted_position(
+        self, camera_pos: Vector2, camera_w: float, camera_h: float
+    ) -> Tuple[float, float]:
+        # Find the center of my object in pygame view space (inverted y-axis). 0,0 is top left corner
+        view_center_x = self.position.x - (camera_pos.x - camera_w / 2)
+        view_center_y = (camera_pos.y + camera_h / 2) - self.position.y
+        # Adjust to the top left corner of the object
+        view_x = view_center_x - self.width / 2
+        view_y = view_center_y - self.height / 2
+        return view_x, view_y
 
 
 class RandomSquareEntity(GameEntity):
