@@ -113,7 +113,8 @@ class GameController:
                 ),
             )
         self.view.draw_surface(
-            self.model.player.surface, self.model.player.get_camera_adjusted_position()
+            self.model.player.get_surface(),
+            self.model.player.get_camera_adjusted_position(),
         )
 
     def add_game_entity(self, entity: GameEntity) -> None:

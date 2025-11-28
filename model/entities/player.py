@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import pygame
@@ -7,28 +8,31 @@ from pygame.key import ScancodeWrapper
 from model.utils.vectorutils import limit_magnitude
 
 
-class Player:
+class Player(ABC):
 
     def __init__(
         self,
-        surface: Surface,
-        width: float,
-        height: float,
+        hitbox_width: float,
+        hitbox_height: float,
+        surface_width: float,
+        surface_height: float,
         camera_width: float,
         camera_height: float,
         world_boundary: Tuple[float, float],
         start_pos: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 1.0,
     ) -> None:
-        self.surface: Surface = surface
-        self.width: float = width
-        self.height: float = height
+        self.width: float = hitbox_width
+        self.height: float = hitbox_height
+        self.surface_width: float = surface_width
+        self.surface_height: float = surface_height
         self.camera_width: float = camera_width
         self.camera_height: float = camera_height
         self.camera_w_adjust: float = camera_width / 2
         self.camera_h_adjust: float = camera_height / 2
         self.world_boundary: Tuple[float, float] = world_boundary
         self.position: Vector2 = start_pos
+        self.facing_direction: int = 1
         self.max_speed: float = max_speed
 
     def move_player(
@@ -61,15 +65,25 @@ class Player:
             self.position.y = self.camera_h_adjust
         if self.position.y + self.camera_h_adjust >= self.world_boundary[1]:
             self.position.y = self.world_boundary[1] - self.camera_h_adjust - 1
+        # Update facing direction for drawing
+        if velocity.x != 0:
+            if velocity.x > 0:
+                self.facing_direction = 1
+            else:
+                self.facing_direction = -1
 
     def get_camera_adjusted_position(self) -> Tuple[float, float]:
         """
-        Returns the coordinates of the top left corner of the player in the center of the screen
+        Returns the coordinates to center the player surface on the screen
         """
         return (
-            self.camera_w_adjust - self.width / 2,
-            self.camera_h_adjust - self.height / 2,
+            self.camera_w_adjust - self.surface_width / 2,
+            self.camera_h_adjust - self.surface_height / 2,
         )
+
+    @abstractmethod
+    def get_surface(self):
+        pass
 
 
 class Turtle(Player):
@@ -79,18 +93,35 @@ class Turtle(Player):
         camera_height: float,
         world_boundary: Tuple[float, float],
     ) -> None:
-        turtle_size: float = 100.0
+        hitbox_width: float = 100.0
+        hitbox_height: float = 100.0
+        surface_width: float = 128.0
+        surface_height: float = 128.0
+        self.surface_left: Surface = pygame.image.load("images/turtle-side-left.png")
+        self.surface_left = self.surface_left.convert_alpha()
+        self.surface_left = pygame.transform.scale(
+            self.surface_left, (surface_width, surface_height)
+        )
+        self.surface_right: Surface = pygame.image.load("images/turtle-side-right.png")
+        self.surface_right = self.surface_right.convert_alpha()
+        self.surface_right = pygame.transform.scale(
+            self.surface_right, (surface_width, surface_height)
+        )
         turtle_speed: float = 500.0
-        turtle_color: Tuple[int, int, int] = (0, 200, 0)
-        turtle_surface: Surface = Surface((turtle_size, turtle_size))
-        turtle_surface.fill(turtle_color)
         super().__init__(
-            turtle_surface,
-            turtle_size,
-            turtle_size,
+            hitbox_width,
+            hitbox_height,
+            surface_width,
+            surface_height,
             camera_width,
             camera_height,
             world_boundary,
             Vector2(world_boundary[0] / 2, world_boundary[1] / 2),
             turtle_speed,
         )
+
+    def get_surface(self):
+        if self.facing_direction > 0:
+            return self.surface_right
+        else:
+            return self.surface_left
