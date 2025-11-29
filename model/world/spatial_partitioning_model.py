@@ -1,6 +1,8 @@
+import random
 from typing import Tuple
 
-from pygame import Vector2
+import pygame
+from pygame import Vector2, Surface
 from pygame.key import ScancodeWrapper
 
 from model.entities.gameentity import GameEntity
@@ -35,8 +37,13 @@ class SpatialPartitioningModel:
         for row in range(self.grid_height):
             grid_space.append([])
             for col in range(self.grid_width):
+                background: Surface = pygame.Surface((self.cell_size, self.cell_size))
+                noise: int = random.randint(0, 25)
+                background.fill((0, 50 + noise, 115 + noise * 2))
                 grid_space[row].append(
-                    GridCell(self.cell_size, row, col, self.player.camera_height)
+                    GridCell(
+                        self.cell_size, row, col, self.player.camera_height, background
+                    )
                 )
         return grid_space
 
@@ -94,6 +101,31 @@ class SpatialPartitioningModel:
         self.grid_space[int(entity.position.y / self.cell_size)][
             int(entity.position.x / self.cell_size)
         ].entities.append(entity)
+
+    def get_grid_cells_in_range(
+        self, x_range: Tuple[float, float], y_range: Tuple[float, float]
+    ) -> list[GridCell]:
+        left: int = int(x_range[0] / self.cell_size)
+        right: int = int(x_range[1] / self.cell_size)
+        bottom: int = int(y_range[0] / self.cell_size)
+        top: int = int(y_range[1] / self.cell_size)
+        cells: list[GridCell] = []
+        for r in range(bottom, top + 1):
+            for c in range(left, right + 1):
+                cells.append(self.grid_space[r][c])
+        return cells
+
+    def get_grid_cells_in_camera_range(self) -> list[GridCell]:
+        return self.get_grid_cells_in_range(
+            (
+                self.player.position.x - self.player.camera_w_adjust,
+                self.player.position.x + self.player.camera_w_adjust,
+            ),
+            (
+                self.player.position.y - self.player.camera_h_adjust,
+                self.player.position.y + self.player.camera_h_adjust,
+            ),
+        )
 
     def get_entities_in_range(
         self, x_range: Tuple[float, float], y_range: Tuple[float, float]
