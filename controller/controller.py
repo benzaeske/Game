@@ -7,9 +7,9 @@ from pygame import Vector2, Surface
 from pygame.key import ScancodeWrapper
 from pygame.time import Clock
 
+from model.entities.gameentity import GameEntity
 from model.entities.player import Turtle
-from model.model import GameEntity
-from model.spatial_partitioning_model import SpatialPartitioningModel
+from model.world.spatial_partitioning_model import SpatialPartitioningModel
 from view.view import View
 
 
