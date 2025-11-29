@@ -5,6 +5,7 @@ from pygame.key import ScancodeWrapper
 
 from model.entities.gameentity import GameEntity
 from model.entities.player import Player
+from model.world.grid_cell import GridCell
 
 
 class SpatialPartitioningModel:
@@ -26,39 +27,48 @@ class SpatialPartitioningModel:
         self.cell_size: float = cell_size
         self.grid_width: int = int(self.world_width / self.cell_size)
         self.grid_height: int = int(self.world_height / self.cell_size)
-        self.grid_space: list[list[list[GameEntity]]] = [
-            [[] for _ in range(self.grid_width)] for _ in range(self.grid_height)
-        ]
         self.player: Player = player
+        self.grid_space: list[list[GridCell]] = self.initialize_grid_space()
+
+    def initialize_grid_space(self) -> list[list[GridCell]]:
+        grid_space: list[list[GridCell]] = []
+        for row in range(self.grid_height):
+            grid_space.append([])
+            for col in range(self.grid_width):
+                grid_space[row].append(
+                    GridCell(self.cell_size, row, col, self.player.camera_height)
+                )
+        return grid_space
 
     def update_model(
         self, dt: float, mouse_pos: Vector2, key_presses: ScancodeWrapper
     ) -> None:
-        # TODO check for collisions
         # Apply forces to all entities
         for row in range(self.grid_height):
             for col in range(self.grid_width):
-                for entity in self.grid_space[row][col]:
+                for entity in self.grid_space[row][col].entities:
                     self.apply_forces_to_entity(entity, mouse_pos)
         # Move entities:
         # This must be done after all forces have been applied and entity velocities are updated for this frame
         update_cells: list[Tuple[int, int, GameEntity]] = []
         for row in range(self.grid_height):
             for col in range(self.grid_width):
-                for i in range(len(self.grid_space[row][col]) - 1, -1, -1):
-                    e = self.grid_space[row][col][i]
+                for i in range(len(self.grid_space[row][col].entities) - 1, -1, -1):
+                    e = self.grid_space[row][col].entities[i]
                     e.update_position(self.world_width, self.world_height, dt)
                     # Check if we are in a new grid cell. If we are, move the entity to the other grid cell's list
                     new_r = int(e.position.y / self.cell_size)
                     new_c = int(e.position.x / self.cell_size)
                     if new_r != row or new_c != col:
-                        del self.grid_space[row][col][i]
+                        del self.grid_space[row][col].entities[i]
                         # Track which entities moved grid cells
                         update_cells.append((new_r, new_c, e))
         # Update grid cells with entities that moved into new cells:
         # This must be done after all entities have moved otherwise we run the risk of processing an entity's position update twice
         for cell_entity in update_cells:
-            self.grid_space[cell_entity[0]][cell_entity[1]].append(cell_entity[2])
+            self.grid_space[cell_entity[0]][cell_entity[1]].entities.append(
+                cell_entity[2]
+            )
         # Move player
         self.player.move_player(key_presses, dt)
 
@@ -77,13 +87,13 @@ class SpatialPartitioningModel:
                 grid_r = (grid_r + self.grid_height) % self.grid_height
                 grid_c: int = c + dc
                 grid_c = (grid_c + self.grid_width) % self.grid_width
-                neighbors.extend(self.grid_space[grid_r][grid_c])
+                neighbors.extend(self.grid_space[grid_r][grid_c].entities)
         entity.apply_forces(neighbors, mouse_pos)
 
     def add_game_entity(self, entity: GameEntity) -> None:
         self.grid_space[int(entity.position.y / self.cell_size)][
             int(entity.position.x / self.cell_size)
-        ].append(entity)
+        ].entities.append(entity)
 
     def get_entities_in_range(
         self, x_range: Tuple[float, float], y_range: Tuple[float, float]
@@ -98,7 +108,7 @@ class SpatialPartitioningModel:
         entities: list[GameEntity] = []
         for r in range(bottom, top + 1):
             for c in range(left, right + 1):
-                entities.extend(self.grid_space[r][c])
+                entities.extend(self.grid_space[r][c].entities)
         return entities
 
     def get_entities_in_camera_range(self):

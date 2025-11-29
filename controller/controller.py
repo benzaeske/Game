@@ -99,7 +99,12 @@ class GameController:
         self.model.update_model(self.dt, Vector2(self.mouse_pos), self.key_presses)
 
     def draw_background(self) -> None:
-        self.view.draw_background()
+        for row in self.model.grid_space:
+            for grid_cell in row:
+                self.view.draw_surface(
+                    grid_cell.background_surface, grid_cell.background_draw_pos
+                )
+
         self.view.print_fps(self.clock.get_fps())
 
     def draw_game_entities(self) -> None:
