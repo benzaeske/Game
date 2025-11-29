@@ -1,8 +1,8 @@
+import math
 import random
-from typing import Tuple
 
 import pygame
-from pygame import Surface, Vector2, Rect
+from pygame import Surface, Vector2
 
 from model.utils.vectorutils import limit_magnitude, safe_normalize
 
@@ -67,32 +67,13 @@ class GameEntity:
         target_dir *= k
         self.acceleration += target_dir
 
-    def get_rect(self) -> Rect:
+    def get_surface(self):
         """
-        Gets a pygame.Rect that has adjusted coordinates for pygame.blit
+        Gets the surface of this entity rotated according to its velocity
         """
-        # Adjust the position from the middle of the object to the top left corner
-        adjusted_pos: Vector2 = self.position - self.pos_display_adjust
-        return Rect(adjusted_pos.x, adjusted_pos.y, self.width, self.height)
-
-    def get_display_adjusted_pos(self) -> Tuple[float, float]:
-        """
-        Gets a tuple of floats that are ready to use as coordinates for a pygame.blit
-        """
-        # Adjust the position from the middle of the object to the top left corner
-        adjusted_pos: Vector2 = self.position - self.pos_display_adjust
-        return adjusted_pos.x, adjusted_pos.y
-
-    def get_camera_adjusted_position(
-        self, camera_pos: Vector2, camera_w: float, camera_h: float
-    ) -> Tuple[float, float]:
-        # Find the center of my object in pygame view space (inverted y-axis). 0,0 is top left corner
-        view_center_x = self.position.x - (camera_pos.x - camera_w / 2)
-        view_center_y = (camera_pos.y + camera_h / 2) - self.position.y
-        # Adjust to the top left corner of the object
-        view_x = view_center_x - self.width / 2
-        view_y = view_center_y - self.height / 2
-        return view_x, view_y
+        return pygame.transform.rotate(
+            self.surface, math.degrees(math.atan2(self.velocity.y, self.velocity.x))
+        )
 
 
 class RandomSquareEntity(GameEntity):

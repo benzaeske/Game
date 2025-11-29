@@ -1,9 +1,9 @@
 from controller.controller import GameController, ControllerOptions
-from model.entities.boid import BoidFactory, FlockingParameters
+from model.entities.boid import FlockingParameters, FishFactory, FishTypes
 
-world_width = 10000
-world_height = 10000
-cell_size = 100.0
+world_width = 6400.0
+world_height = 6400.0
+cell_size = 128.0
 background_color = (0, 0, 0)
 
 game_controller = GameController(
@@ -11,22 +11,22 @@ game_controller = GameController(
 )
 
 # Boid options
-num_agents = 2000
-agent_size = 11.0
-agent_speed = 300.0
+num_agents = 1000
+agent_size = 32.0
+agent_speed = 200.0
 max_acceleration = 1.0
-entity_color = (255, 255, 255)
 
 # Flocking parameters
-cohere_dist = 100.0
-avoid_dist = 33.0
+cohere_dist = 128.0
+avoid_dist = 48.0
 cohere_k = 1.0
 avoid_k = 1.8
 align_k = 1.0
 target_mouse = False
 target_k = 1.0
 
-boid_factory = BoidFactory(
+red_school = FishFactory(
+    FishTypes.RED,
     FlockingParameters(
         cohere_dist,
         avoid_dist,
@@ -42,10 +42,9 @@ boid_factory = BoidFactory(
     max_acceleration,
     (0.0, game_controller.model.world_width),
     (0.0, game_controller.model.world_height),
-    entity_color,
 )
 
 for x in range(0, num_agents):
-    game_controller.add_game_entity(boid_factory.create_random_boid())
+    game_controller.add_game_entity(red_school.create_random_boid())
 
 game_controller.start_game()

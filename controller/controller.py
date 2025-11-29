@@ -3,7 +3,7 @@ import time
 from typing import Tuple
 
 import pygame
-from pygame import Vector2
+from pygame import Vector2, Surface
 from pygame.key import ScancodeWrapper
 from pygame.time import Clock
 
@@ -104,18 +104,29 @@ class GameController:
 
     def draw_game_entities(self) -> None:
         for entity in self.model.get_entities_in_camera_range():
+            entity_surface = entity.get_surface()
             self.view.draw_surface(
-                entity.surface,
-                entity.get_camera_adjusted_position(
-                    self.model.player.position,
-                    self.model.player.camera_width,
-                    self.model.player.camera_height,
-                ),
+                entity_surface,
+                self.convert_model_pos_to_view_pos(entity.position, entity_surface),
             )
         self.view.draw_surface(
             self.model.player.get_surface(),
             self.model.player.get_camera_adjusted_position(),
         )
+
+    def convert_model_pos_to_view_pos(
+        self, model_pos: Vector2, blit_surface: Surface
+    ) -> Tuple[float, float]:
+        camera_pos = self.model.player.position
+        camera_w = self.model.player.camera_width
+        camera_h = self.model.player.camera_height
+        # Find the center of my object in pygame view space (inverted y-axis). 0,0 is top left corner
+        view_center_x = model_pos.x - (camera_pos.x - camera_w / 2)
+        view_center_y = (camera_pos.y + camera_h / 2) - model_pos.y
+        # Adjust to the top left corner of the object
+        view_x = view_center_x - blit_surface.get_width() / 2
+        view_y = view_center_y - blit_surface.get_height() / 2
+        return view_x, view_y
 
     def add_game_entity(self, entity: GameEntity) -> None:
         self.model.add_game_entity(entity)

@@ -1,4 +1,5 @@
 import random
+from enum import Enum
 from typing import Tuple
 
 import pygame
@@ -135,7 +136,7 @@ class BoidFactory:
         max_acceleration: float,
         position_x_range: Tuple[float, float],
         position_y_range: Tuple[float, float],
-        color: Tuple[int, int, int] = (255, 255, 255),
+        surface: Surface = None,
     ) -> None:
         self.parameters: FlockingParameters = parameters
         self.width: float = width
@@ -144,14 +145,16 @@ class BoidFactory:
         self.max_acceleration: float = max_acceleration
         self.position_x_range: Tuple[float, float] = position_x_range
         self.position_y_range: Tuple[float, float] = position_y_range
-        self.color: Tuple[int, int, int] = color
+        if surface is None:
+            self.surface: Surface = pygame.Surface((self.width, self.height))
+            self.surface.fill((255, 255, 255))
+        else:
+            self.surface = surface
 
     def create_random_boid(self) -> Boid:
         """
         Creates a Boid at a random position using settings from this factory. The boid has a random starting velocity that is limited by its max speed.
         """
-        surface: Surface = pygame.Surface((self.width, self.height))
-        surface.fill(self.color)
         start_velocity: Vector2 = Vector2(
             random.uniform(-self.max_speed, self.max_speed),
             random.uniform(-self.max_speed, self.max_speed),
@@ -159,7 +162,7 @@ class BoidFactory:
         limit_magnitude(start_velocity, self.max_speed)
         return Boid(
             self.parameters,
-            surface,
+            self.surface,
             self.width,
             self.height,
             Vector2(
@@ -169,4 +172,47 @@ class BoidFactory:
             start_velocity,
             self.max_speed,
             self.max_acceleration,
+        )
+
+
+class FishTypes(Enum):
+    RED = 0
+    GREEN = 1
+    YELLOW = 2
+
+
+class FishFactory(BoidFactory):
+
+    def __init__(
+        self,
+        fish_type: FishTypes,
+        parameters: FlockingParameters,
+        width: float,
+        height: float,
+        max_speed: float,
+        max_acceleration: float,
+        position_x_range: Tuple[float, float],
+        position_y_range: Tuple[float, float],
+    ) -> None:
+        surface: Surface | None = None
+        if fish_type == FishTypes.RED:
+            surface: Surface = pygame.image.load("images/red_fish.png").convert_alpha()
+        elif fish_type == FishTypes.GREEN:
+            surface: Surface = pygame.image.load(
+                "images/green_fish.png"
+            ).convert_alpha()
+        elif fish_type == FishTypes.YELLOW:
+            surface: Surface = pygame.image.load(
+                "images/yellow_fish.png"
+            ).convert_alpha()
+        surface = pygame.transform.scale(surface, (width, height))
+        super().__init__(
+            parameters,
+            width,
+            height,
+            max_speed,
+            max_acceleration,
+            position_x_range,
+            position_y_range,
+            surface,
         )
