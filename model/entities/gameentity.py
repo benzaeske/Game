@@ -1,5 +1,6 @@
 import math
 import random
+import uuid
 
 import pygame
 from pygame import Surface, Vector2
@@ -12,19 +13,19 @@ class GameEntity:
     def __init__(
         self,
         surface: Surface,
+        group_id: uuid.UUID = uuid.uuid4(),
         width: float = 1.0,
         height: float = 1.0,
         start_pos: Vector2 = Vector2(0.0, 0.0),
         start_v: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 1.0,
         max_acceleration: float = 0.1,
-        group_id: int = -1,
-        interaction_range: int = 1,
+        cell_interaction_range: int = 1,
     ):
         self.surface: Surface = surface
+        self.group_id: uuid.UUID = group_id
         self.width: float = width
         self.height: float = height
-        self.pos_display_adjust: Vector2 = Vector2(self.width / 2, self.height / 2)
 
         # Physics-related variables:
         self.position: Vector2 = start_pos
@@ -32,16 +33,13 @@ class GameEntity:
         self.acceleration: Vector2 = Vector2(0.0, 0.0)
         self.max_speed: float = max_speed
         self.max_acceleration: float = max_acceleration
-        self.max_acceleration: float = max_acceleration
-        self.group_id: int = group_id
-        self.interaction_range: int = interaction_range
+        self.cell_interaction_range: int = cell_interaction_range
 
-    def apply_forces(self, entities: list["GameEntity"], mouse_pos: Vector2) -> None:
+    def apply_forces(self, entities: list["GameEntity"]) -> None:
         """
         Called in the model's update loop for each entity in the simulation.
         By default, GameEntities don't get any forces applied to them. If you want to automatically apply forces to a GameObject in the model's update loop you have to extend the class and override this method.
         :param entities: List of GameObject entities that are within range to interact with this entity when calculated forces on it
-        :param mouse_pos: The current mouse position for this frame
         """
         pass
 

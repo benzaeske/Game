@@ -2,7 +2,7 @@ import random
 from typing import Tuple
 
 import pygame
-from pygame import Vector2, Surface
+from pygame import Surface
 from pygame.key import ScancodeWrapper
 
 from model.entities.gameentity import GameEntity
@@ -47,14 +47,12 @@ class SpatialPartitioningModel:
                 )
         return grid_space
 
-    def update_model(
-        self, dt: float, mouse_pos: Vector2, key_presses: ScancodeWrapper
-    ) -> None:
+    def update_model(self, dt: float, key_presses: ScancodeWrapper) -> None:
         # Apply forces to all entities
         for row in range(self.grid_height):
             for col in range(self.grid_width):
                 for entity in self.grid_space[row][col].entities:
-                    self.apply_forces_to_entity(entity, mouse_pos)
+                    self.apply_forces_to_entity(entity)
         # Move entities:
         # This must be done after all forces have been applied and entity velocities are updated for this frame
         update_cells: list[Tuple[int, int, GameEntity]] = []
@@ -79,12 +77,12 @@ class SpatialPartitioningModel:
         # Move playeraaaa
         self.player.move_player(key_presses, dt)
 
-    def apply_forces_to_entity(self, entity: GameEntity, mouse_pos: Vector2) -> None:
+    def apply_forces_to_entity(self, entity: GameEntity) -> None:
         """
         Finds this entity's relevant neighbors and applies forces using only the list of relevant neighbors
         """
         # Relevant neighbors are any entities in the 'cell_range' grid squares surrounding the current entity's grid square
-        cell_range: int = entity.interaction_range
+        cell_range: int = entity.cell_interaction_range
         neighbors: list[GameEntity] = []
         r: int = int(entity.position.y / self.cell_size)
         c: int = int(entity.position.x / self.cell_size)
@@ -95,7 +93,7 @@ class SpatialPartitioningModel:
                 grid_c: int = c + dc
                 grid_c = (grid_c + self.grid_width) % self.grid_width
                 neighbors.extend(self.grid_space[grid_r][grid_c].entities)
-        entity.apply_forces(neighbors, mouse_pos)
+        entity.apply_forces(neighbors)
 
     def add_game_entity(self, entity: GameEntity) -> None:
         self.grid_space[int(entity.position.y / self.cell_size)][

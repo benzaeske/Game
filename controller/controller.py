@@ -96,7 +96,7 @@ class GameController:
             sys.exit()
 
     def update_model(self) -> None:
-        self.model.update_model(self.dt, Vector2(self.mouse_pos), self.key_presses)
+        self.model.update_model(self.dt, self.key_presses)
 
     def draw_background(self) -> None:
         for grid_cell in self.model.get_grid_cells_in_camera_range():

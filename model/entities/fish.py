@@ -1,80 +1,67 @@
 import random
 from enum import Enum
 from typing import Tuple
+from uuid import UUID
 
 import pygame
 from pygame import Vector2, Surface
 
 from model.entities.gameentity import GameEntity
+from model.entities.school import SchoolingParameters
 from model.utils.vectorutils import limit_magnitude
 
 
-class SchoolingParameters:
-    """
-    Parameters for controlling how an entity behaves with its flock
-    :param cohere_distance: The maximum distance at which boids will try to cohere with their 'friends'
-    :param avoid_distance: The maximum distance at which boids will try to avoid their neighbors
-    :param cohere_k: A constant that represents how much a boid will prioritize cohering with friends
-    :param align_k: A constant that represents how much a boid will prioritize aligning with friends
-    :param flock_id: Unique identifier for a flock. Currently not used, but will be used to have multiple flocks that don't cohere to each other
-    :param target_mouse: Whether the flock will move towards the mouse - temporary for testing
-    :param target_k: How much the boids will prioritize moving towards their 'target' (currently just the mouse) - temporary for testing
-    """
+class FishType(Enum):
+    RED = 0
+    GREEN = 1
+    YELLOW = 2
 
+
+class FishOptions:
     def __init__(
         self,
-        cohere_distance: float,
-        avoid_distance: float,
-        cohere_k: float = 1.0,
-        avoid_k: float = 1.5,
-        align_k: float = 1.0,
-        flock_id: int = -1,
-        target_location: Vector2 | None = None,
-        target_k: float = 1.0,
+        fish_type: FishType,
+        width: float,
+        height: float,
+        max_speed: float,
+        max_acceleration: float,
+        initial_position: Vector2 = Vector2(0.0, 0.0),
+        initial_velocity: Vector2 = Vector2(0.0, 0.0),
+        cell_interaction_range: int = 1,
     ) -> None:
-        self.cohere_distance: float = cohere_distance
-        self.avoid_distance: float = avoid_distance
-        self.cohere_k: float = cohere_k
-        self.avoid_k: float = avoid_k
-        self.align_k: float = align_k
-        self.flock_id: int = flock_id
-        self.target_location: Vector2 | None = target_location
-        self.target_k: float = target_k
+        self.fish_type: FishType = fish_type
+        self.width: float = width
+        self.height: float = height
+        self.max_speed: float = max_speed
+        self.max_acceleration: float = max_acceleration
+        self.initial_position: Vector2 = initial_position
+        self.initial_velocity: Vector2 = initial_velocity
+        self.cell_interaction_range: int = cell_interaction_range
 
 
 class Fish(GameEntity):
     def __init__(
         self,
-        schooling_parameters: SchoolingParameters,
-        surface: Surface,
-        width: float,
-        height: float,
-        start_pos: Vector2,
-        start_v: Vector2,
-        max_speed: float,
-        max_acceleration: float,
-        interaction_range: int = 1,
+        fish_options: FishOptions,
+        school_id: UUID,
+        fish_sprite: Surface,
     ) -> None:
-        self.cohere_distance: float = schooling_parameters.cohere_distance
-        self.avoid_distance: float = schooling_parameters.avoid_distance
-        self.cohere_k: float = schooling_parameters.cohere_k
-        self.avoid_k: float = schooling_parameters.avoid_k
-        self.align_k: float = schooling_parameters.align_k
-        self.target_location: Vector2 | None = schooling_parameters.target_location
-        self.target_k: float = schooling_parameters.target_k
+        self.fish_options: FishOptions = fish_options
+        self.school_id: UUID = school_id
+        self.fish_sprite: Surface = fish_sprite
         super().__init__(
-            surface,
-            width,
-            height,
-            start_pos,
-            start_v,
-            max_speed,
-            max_acceleration,
-            schooling_parameters.flock_id,
-            interaction_range,
+            fish_sprite,
+            school_id,
+            fish_options.width,
+            fish_options.height,
+            fish_options.initial_position,
+            fish_options.initial_velocity,
+            fish_options.max_speed,
+            fish_options.max_acceleration,
+            fish_options.cell_interaction_range,
         )
 
-    def apply_forces(self, entities: list[GameEntity], mouse_pos: Vector2) -> None:
+    def apply_forces(self, entities: list[GameEntity]) -> None:
         self.apply_schooling_forces(entities)
         if self.target_location is not None:
             self.school_to_target_location(self.target_location)
@@ -93,7 +80,7 @@ class Fish(GameEntity):
         count_n: int = 0
         count_s: int = 0
         for other in others:
-            if self.group_id >= 0 and self.group_id == other.group_id:
+            if self.group_id == other.group_id:
                 # TODO add check to make sure not to check this entity against itself
                 d: float = self.position.distance_to(other.position)
                 if (d > 0) and d < self.cohere_distance:
@@ -181,17 +168,11 @@ class BoidFactory:
         )
 
 
-class FishTypes(Enum):
-    RED = 0
-    GREEN = 1
-    YELLOW = 2
-
-
 class FishFactory(BoidFactory):
 
     def __init__(
         self,
-        fish_type: FishTypes,
+        fish_type: FishType,
         parameters: SchoolingParameters,
         width: float,
         height: float,
@@ -202,13 +183,13 @@ class FishFactory(BoidFactory):
         interaction_range: int = 1,
     ) -> None:
         surface: Surface | None = None
-        if fish_type == FishTypes.RED:
+        if fish_type == FishType.RED:
             surface: Surface = pygame.image.load("images/red_fish.png").convert_alpha()
-        elif fish_type == FishTypes.GREEN:
+        elif fish_type == FishType.GREEN:
             surface: Surface = pygame.image.load(
                 "images/green_fish.png"
             ).convert_alpha()
-        elif fish_type == FishTypes.YELLOW:
+        elif fish_type == FishType.YELLOW:
             surface: Surface = pygame.image.load(
                 "images/yellow_fish.png"
             ).convert_alpha()

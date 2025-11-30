@@ -3,7 +3,7 @@ import random
 from pygame import Vector2
 
 from controller.controller import GameController, ControllerOptions
-from model.entities.fish import SchoolingParameters, FishFactory, FishTypes
+from model.entities.fish import SchoolingParameters, FishFactory, FishType
 
 world_width = 6400.0
 world_height = 6400.0
@@ -17,7 +17,7 @@ game_controller = GameController(
 
 def get_red_school_with_random_target(school_id: int):
     return FishFactory(
-        FishTypes.RED,
+        FishType.RED,
         SchoolingParameters(
             128.0,
             48.0,
@@ -50,7 +50,7 @@ for x in range(red_school_count):
         game_controller.add_game_entity(school.create_random_boid())
 
 green_school_1 = FishFactory(
-    FishTypes.GREEN,
+    FishType.GREEN,
     SchoolingParameters(
         256.0,
         96.0,
@@ -71,7 +71,7 @@ green_school_1 = FishFactory(
 )
 
 yellow_school_1 = FishFactory(
-    FishTypes.YELLOW,
+    FishType.YELLOW,
     SchoolingParameters(
         128.0,
         48.0,
