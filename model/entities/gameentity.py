@@ -18,7 +18,8 @@ class GameEntity:
         start_v: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 1.0,
         max_acceleration: float = 0.1,
-        group_id: int = -1,  # It can be useful for certain flocking behavior to keep track of groups of GameEntities. -1 indicates the GameEntity does not have a group
+        group_id: int = -1,
+        interaction_range: int = 1,
     ):
         self.surface: Surface = surface
         self.width: float = width
@@ -33,6 +34,7 @@ class GameEntity:
         self.max_acceleration: float = max_acceleration
         self.max_acceleration: float = max_acceleration
         self.group_id: int = group_id
+        self.interaction_range: int = interaction_range
 
     def apply_forces(self, entities: list["GameEntity"], mouse_pos: Vector2) -> None:
         """

@@ -84,7 +84,7 @@ class SpatialPartitioningModel:
         Finds this entity's relevant neighbors and applies forces using only the list of relevant neighbors
         """
         # Relevant neighbors are any entities in the 'cell_range' grid squares surrounding the current entity's grid square
-        cell_range: int = 1
+        cell_range: int = entity.interaction_range
         neighbors: list[GameEntity] = []
         r: int = int(entity.position.y / self.cell_size)
         c: int = int(entity.position.x / self.cell_size)

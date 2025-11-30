@@ -29,7 +29,7 @@ class FlockingParameters:
         avoid_k: float = 1.5,
         align_k: float = 1.0,
         flock_id: int = -1,
-        target_mouse: bool = False,
+        target_location: Vector2 | None = None,
         target_k: float = 1.0,
     ) -> None:
         self.cohere_distance: float = cohere_distance
@@ -38,7 +38,7 @@ class FlockingParameters:
         self.avoid_k: float = avoid_k
         self.align_k: float = align_k
         self.flock_id: int = flock_id
-        self.target_mouse: bool = target_mouse
+        self.target_location: Vector2 | None = target_location
         self.target_k: float = target_k
 
 
@@ -53,13 +53,14 @@ class Boid(GameEntity):
         start_v: Vector2,
         max_speed: float,
         max_acceleration: float,
+        interaction_range: int = 1,
     ) -> None:
         self.cohere_distance: float = flocking_parameters.cohere_distance
         self.avoid_distance: float = flocking_parameters.avoid_distance
         self.cohere_k: float = flocking_parameters.cohere_k
         self.avoid_k: float = flocking_parameters.avoid_k
         self.align_k: float = flocking_parameters.align_k
-        self.target_mouse: bool = flocking_parameters.target_mouse
+        self.target_location: Vector2 | None = flocking_parameters.target_location
         self.target_k: float = flocking_parameters.target_k
         super().__init__(
             surface,
@@ -70,12 +71,13 @@ class Boid(GameEntity):
             max_speed,
             max_acceleration,
             flocking_parameters.flock_id,
+            interaction_range,
         )
 
     def apply_forces(self, entities: list[GameEntity], mouse_pos: Vector2) -> None:
         self.apply_flocking_forces(entities)
-        if self.target_mouse:
-            self.flock_to_mouse(mouse_pos)
+        if self.target_location is not None:
+            self.flock_to_target_location(self.target_location)
 
     def apply_flocking_forces(self, others: list[GameEntity]) -> None:
         """
@@ -91,18 +93,19 @@ class Boid(GameEntity):
         count_n: int = 0
         count_s: int = 0
         for other in others:
-            # TODO add check to make sure not to check this entity against itself
-            d: float = self.position.distance_to(other.position)
-            if (d > 0) and d < self.cohere_distance:
-                sum_align += other.velocity
-                sum_cohere += other.position
-                count_n += 1
-            if (d > 0) and (d < self.avoid_distance):
-                diff: Vector2 = self.position - other.position
-                diff.normalize_ip()
-                diff /= d
-                sum_avoid += diff
-                count_s += 1
+            if self.group_id > 0 and self.group_id == other.group_id:
+                # TODO add check to make sure not to check this entity against itself
+                d: float = self.position.distance_to(other.position)
+                if (d > 0) and d < self.cohere_distance:
+                    sum_align += other.velocity
+                    sum_cohere += other.position
+                    count_n += 1
+                if (d > 0) and (d < self.avoid_distance):
+                    diff: Vector2 = self.position - other.position
+                    diff.normalize_ip()
+                    diff /= d
+                    sum_avoid += diff
+                    count_s += 1
         if count_s > 0:
             self.target(sum_avoid, self.avoid_k)
         if count_n > 0:
@@ -111,10 +114,10 @@ class Boid(GameEntity):
             sum_cohere -= self.position
             self.target(sum_cohere, self.cohere_k)
 
-    def flock_to_mouse(self, target_location: Vector2) -> None:
+    def flock_to_target_location(self, target_location: Vector2) -> None:
         diff = target_location - self.position
         d = self.position.distance_to(target_location)
-        if d > 200:
+        if d > (self.cohere_distance * 2):
             self.target(diff, self.target_k)
         else:
             self.target(diff, -1 * self.target_k)
@@ -136,6 +139,7 @@ class BoidFactory:
         max_acceleration: float,
         position_x_range: Tuple[float, float],
         position_y_range: Tuple[float, float],
+        interaction_range: int = 1,
         surface: Surface = None,
     ) -> None:
         self.parameters: FlockingParameters = parameters
@@ -145,6 +149,7 @@ class BoidFactory:
         self.max_acceleration: float = max_acceleration
         self.position_x_range: Tuple[float, float] = position_x_range
         self.position_y_range: Tuple[float, float] = position_y_range
+        self.interaction_range: int = interaction_range
         if surface is None:
             self.surface: Surface = pygame.Surface((self.width, self.height))
             self.surface.fill((255, 255, 255))
@@ -172,6 +177,7 @@ class BoidFactory:
             start_velocity,
             self.max_speed,
             self.max_acceleration,
+            self.interaction_range,
         )
 
 
@@ -193,6 +199,7 @@ class FishFactory(BoidFactory):
         max_acceleration: float,
         position_x_range: Tuple[float, float],
         position_y_range: Tuple[float, float],
+        interaction_range: int = 1,
     ) -> None:
         surface: Surface | None = None
         if fish_type == FishTypes.RED:
@@ -214,5 +221,6 @@ class FishFactory(BoidFactory):
             max_acceleration,
             position_x_range,
             position_y_range,
+            interaction_range,
             surface,
         )
