@@ -9,7 +9,7 @@ from model.entities.gameentity import GameEntity
 from model.utils.vectorutils import limit_magnitude
 
 
-class FlockingParameters:
+class SchoolingParameters:
     """
     Parameters for controlling how an entity behaves with its flock
     :param cohere_distance: The maximum distance at which boids will try to cohere with their 'friends'
@@ -42,10 +42,10 @@ class FlockingParameters:
         self.target_k: float = target_k
 
 
-class Boid(GameEntity):
+class Fish(GameEntity):
     def __init__(
         self,
-        flocking_parameters: FlockingParameters,
+        schooling_parameters: SchoolingParameters,
         surface: Surface,
         width: float,
         height: float,
@@ -55,13 +55,13 @@ class Boid(GameEntity):
         max_acceleration: float,
         interaction_range: int = 1,
     ) -> None:
-        self.cohere_distance: float = flocking_parameters.cohere_distance
-        self.avoid_distance: float = flocking_parameters.avoid_distance
-        self.cohere_k: float = flocking_parameters.cohere_k
-        self.avoid_k: float = flocking_parameters.avoid_k
-        self.align_k: float = flocking_parameters.align_k
-        self.target_location: Vector2 | None = flocking_parameters.target_location
-        self.target_k: float = flocking_parameters.target_k
+        self.cohere_distance: float = schooling_parameters.cohere_distance
+        self.avoid_distance: float = schooling_parameters.avoid_distance
+        self.cohere_k: float = schooling_parameters.cohere_k
+        self.avoid_k: float = schooling_parameters.avoid_k
+        self.align_k: float = schooling_parameters.align_k
+        self.target_location: Vector2 | None = schooling_parameters.target_location
+        self.target_k: float = schooling_parameters.target_k
         super().__init__(
             surface,
             width,
@@ -70,16 +70,16 @@ class Boid(GameEntity):
             start_v,
             max_speed,
             max_acceleration,
-            flocking_parameters.flock_id,
+            schooling_parameters.flock_id,
             interaction_range,
         )
 
     def apply_forces(self, entities: list[GameEntity], mouse_pos: Vector2) -> None:
-        self.apply_flocking_forces(entities)
+        self.apply_schooling_forces(entities)
         if self.target_location is not None:
-            self.flock_to_target_location(self.target_location)
+            self.school_to_target_location(self.target_location)
 
-    def apply_flocking_forces(self, others: list[GameEntity]) -> None:
+    def apply_schooling_forces(self, others: list[GameEntity]) -> None:
         """
         Updates this entity according to the three rules of Boid's algorithm.\n
         #. Each entity moves away from other entities that are within its avoidance range.\n
@@ -114,7 +114,7 @@ class Boid(GameEntity):
             sum_cohere -= self.position
             self.target(sum_cohere, self.cohere_k)
 
-    def flock_to_target_location(self, target_location: Vector2) -> None:
+    def school_to_target_location(self, target_location: Vector2) -> None:
         diff = target_location - self.position
         d = self.position.distance_to(target_location)
         if d > (self.cohere_distance * 2):
@@ -132,7 +132,7 @@ class BoidFactory:
 
     def __init__(
         self,
-        parameters: FlockingParameters,
+        parameters: SchoolingParameters,
         width: float,
         height: float,
         max_speed: float,
@@ -142,7 +142,7 @@ class BoidFactory:
         interaction_range: int = 1,
         surface: Surface = None,
     ) -> None:
-        self.parameters: FlockingParameters = parameters
+        self.parameters: SchoolingParameters = parameters
         self.width: float = width
         self.height: float = height
         self.max_speed: float = max_speed
@@ -156,7 +156,7 @@ class BoidFactory:
         else:
             self.surface = surface
 
-    def create_random_boid(self) -> Boid:
+    def create_random_boid(self) -> Fish:
         """
         Creates a Boid at a random position using settings from this factory. The boid has a random starting velocity that is limited by its max speed.
         """
@@ -165,7 +165,7 @@ class BoidFactory:
             random.uniform(-self.max_speed, self.max_speed),
         )
         limit_magnitude(start_velocity, self.max_speed)
-        return Boid(
+        return Fish(
             self.parameters,
             self.surface,
             self.width,
@@ -192,7 +192,7 @@ class FishFactory(BoidFactory):
     def __init__(
         self,
         fish_type: FishTypes,
-        parameters: FlockingParameters,
+        parameters: SchoolingParameters,
         width: float,
         height: float,
         max_speed: float,

@@ -8,8 +8,8 @@ from pygame.key import ScancodeWrapper
 from pygame.time import Clock
 
 from model.entities.gameentity import GameEntity
-from model.entities.player import Turtle
-from model.world.spatial_partitioning_model import SpatialPartitioningModel
+from model.player.player import Turtle
+from model.world.world import SpatialPartitioningModel
 from view.view import View
 
 
@@ -63,7 +63,7 @@ class GameController:
         self.dt: float = 0.0
         # Used to trigger logging when dt exceeds the max value required for 60fps
         self.max_dt: float = 0.017
-        # Tracking player inputs
+        # Tracking playeraaaa inputs
         self.mouse_pos: Tuple[int, int] = (0, 0)
         self.key_presses: ScancodeWrapper = ScancodeWrapper(())
 

@@ -6,7 +6,7 @@ from pygame import Vector2, Surface
 from pygame.key import ScancodeWrapper
 
 from model.entities.gameentity import GameEntity
-from model.entities.player import Player
+from model.player.player import Player
 from model.world.grid_cell import GridCell
 
 
@@ -76,7 +76,7 @@ class SpatialPartitioningModel:
             self.grid_space[cell_entity[0]][cell_entity[1]].entities.append(
                 cell_entity[2]
             )
-        # Move player
+        # Move playeraaaa
         self.player.move_player(key_presses, dt)
 
     def apply_forces_to_entity(self, entity: GameEntity, mouse_pos: Vector2) -> None:
