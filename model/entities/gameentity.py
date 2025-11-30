@@ -1,8 +1,3 @@
-import math
-import random
-import uuid
-
-import pygame
 from pygame import Surface, Vector2
 
 from model.utils.vectorutils import limit_magnitude, safe_normalize
@@ -13,17 +8,14 @@ class GameEntity:
     def __init__(
         self,
         surface: Surface,
-        group_id: uuid.UUID = uuid.uuid4(),
         width: float = 1.0,
         height: float = 1.0,
         start_pos: Vector2 = Vector2(0.0, 0.0),
         start_v: Vector2 = Vector2(0.0, 0.0),
         max_speed: float = 1.0,
         max_acceleration: float = 0.1,
-        cell_interaction_range: int = 1,
     ):
         self.surface: Surface = surface
-        self.group_id: uuid.UUID = group_id
         self.width: float = width
         self.height: float = height
 
@@ -33,15 +25,6 @@ class GameEntity:
         self.acceleration: Vector2 = Vector2(0.0, 0.0)
         self.max_speed: float = max_speed
         self.max_acceleration: float = max_acceleration
-        self.cell_interaction_range: int = cell_interaction_range
-
-    def apply_forces(self, entities: list["GameEntity"]) -> None:
-        """
-        Called in the model's update loop for each entity in the simulation.
-        By default, GameEntities don't get any forces applied to them. If you want to automatically apply forces to a GameObject in the model's update loop you have to extend the class and override this method.
-        :param entities: List of GameObject entities that are within range to interact with this entity when calculated forces on it
-        """
-        pass
 
     def update_position(self, world_w: float, world_h: float, dt: float) -> None:
         """
@@ -68,38 +51,4 @@ class GameEntity:
         self.acceleration += target_dir
 
     def get_surface(self):
-        """
-        Gets the surface of this entity rotated according to its velocity
-        """
-        return pygame.transform.rotate(
-            self.surface, math.degrees(math.atan2(self.velocity.y, self.velocity.x))
-        )
-
-
-class RandomSquareEntity(GameEntity):
-    """
-    A white square with a random starting position and a random starting velocity of magnitude equal to the specified limit
-    """
-
-    def __init__(self, size, velocity, screen_w, screen_h):
-        self.size = size
-        color = (255, 255, 255)
-        surface = pygame.Surface((self.size, self.size))
-        surface.fill(color)
-        starting_velocity = Vector2(
-            random.randint(-int(velocity), int(velocity)),
-            random.randint(-int(velocity), int(velocity)),
-        )
-        if starting_velocity.magnitude() != 0.0:
-            starting_velocity.clamp_magnitude_ip(velocity, velocity)
-        super().__init__(
-            surface,
-            self.size,
-            self.size,
-            Vector2(
-                random.randint(int(self.size / 2), screen_w - int(self.size / 2)),
-                random.randint(int(self.size / 2), screen_h - int(self.size / 2)),
-            ),
-            starting_velocity,
-            velocity,
-        )
+        return self.surface

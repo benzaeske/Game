@@ -1,23 +1,29 @@
-import copy
+import random
 import uuid
 from uuid import UUID
 
 import pygame.image
-from pygame import Vector2, Surface
+from pygame import Vector2, Surface, Rect
 
-from model.entities.fish import FishOptions, Fish, FishType
+from model.entities.fish import FishSettings, Fish, FishType
 from model.utils.vectorutils import limit_magnitude
 
 
-class SchoolingParameters:
+class SchoolParameters:
+
     def __init__(
         self,
         cohere_distance: float,
         avoid_distance: float,
-        interaction_cell_radius: int = 1,
-        cohere_k: float = 1.0,
-        avoid_k: float = 1.8,
-        align_k: float = 1.0,
+        interaction_cell_radius: int,
+        cohere_k: float,
+        avoid_k: float,
+        align_k: float,
+        shoal_location: Vector2 | None,
+        shoal_radius: float,
+        shoal_k: float,
+        hatch_region: Rect,
+        egg_count: int,
     ) -> None:
         self.cohere_distance: float = cohere_distance
         self.avoid_distance: float = avoid_distance
@@ -25,39 +31,25 @@ class SchoolingParameters:
         self.cohere_k: float = cohere_k
         self.avoid_k: float = avoid_k
         self.align_k: float = align_k
-
-
-class ShoalingParameters:
-
-    def __init__(
-        self,
-        shoal_location: Vector2 | None = None,
-        shoal_k: float = 1.0,
-        shoal_radius: int = 1,
-        spawn_radius: int = 1,
-        spawn_amount: int = 32,
-    ):
-        self.shoal_location: Vector2 | None = shoal_location
+        self.shoal_location: Vector2 = shoal_location
+        self.shoal_radius: float = shoal_radius
         self.shoal_k: float = shoal_k
-        self.shoal_radius: int = shoal_radius
-        self.spawn_radius: int = spawn_radius
-        self.spawn_amount: int = spawn_amount
+        self.hatch_region: Rect = hatch_region
+        self.egg_count: int = egg_count
 
 
 class School:
     def __init__(
         self,
-        schooling_params: SchoolingParameters,
-        shoaling_params: ShoalingParameters,
-        fish_settings: FishOptions,
+        school_params: SchoolParameters,
+        fish_settings: FishSettings,
     ) -> None:
         self.school_id: UUID = uuid.uuid4()
-        self.schooling_params: SchoolingParameters = schooling_params
-        self.shoaling_params: ShoalingParameters = shoaling_params
-        self.fish_settings: FishOptions = fish_settings
-        self.fish_surface = self.load_fish_surface()
+        self.school_params: SchoolParameters = school_params
+        self.fish_settings: FishSettings = fish_settings
+        self.fish_sprite: Surface = self.load_fish_sprite()
 
-    def load_fish_surface(self) -> Surface:
+    def load_fish_sprite(self) -> Surface:
         match self.fish_settings.fish_type:
             case FishType.RED:
                 surface = pygame.image.load("images/red_fish.png").convert_alpha()
@@ -76,16 +68,25 @@ class School:
                 )
 
     def hatch_fish(self) -> Fish:
-        fish_options: FishOptions = copy.copy(self.fish_settings)
-        fish_options.initial_position = Vector2(
-            0.0, 0.0
-        )  # TODO random location in spawn radius
-        fish_options.initial_velocity = Vector2(
+        hatch_region = self.school_params.hatch_region
+        initial_position = Vector2(
+            random.uniform(hatch_region.x, hatch_region.x + hatch_region.width),
+            random.uniform(hatch_region.y, hatch_region.y + hatch_region.height),
+        )
+        initial_velocity = Vector2(
             self.fish_settings.max_speed, self.fish_settings.max_speed
         )
-        limit_magnitude(fish_options.initial_velocity, self.fish_settings.max_speed)
+        limit_magnitude(initial_velocity, self.fish_settings.max_speed)
         return Fish(
-            fish_options,
+            FishSettings(
+                self.fish_settings.fish_type,
+                self.fish_settings.width,
+                self.fish_settings.height,
+                self.fish_settings.max_speed,
+                self.fish_settings.max_acceleration,
+                initial_position,
+                initial_velocity,
+            ),
             self.school_id,
-            self.fish_surface,
+            self.fish_sprite,
         )
