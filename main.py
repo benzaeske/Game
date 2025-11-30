@@ -1,3 +1,5 @@
+import random
+
 from pygame import Vector2
 
 from controller.controller import GameController, ControllerOptions
@@ -12,26 +14,40 @@ game_controller = GameController(
     ControllerOptions(world_width, world_height, cell_size, background_color)
 )
 
-red_school_1 = FishFactory(
-    FishTypes.RED,
-    FlockingParameters(
-        128.0,
-        48.0,
+
+def get_red_school_with_random_target(school_id: int):
+    return FishFactory(
+        FishTypes.RED,
+        FlockingParameters(
+            128.0,
+            48.0,
+            1.0,
+            1.8,
+            1.0,
+            school_id,
+            Vector2(
+                random.randint(int(cell_size), int(world_width - cell_size)),
+                random.randint(int(cell_size), int(world_height - cell_size)),
+            ),
+            1.0,
+        ),
+        32.0,
+        32.0,
+        200.0,
         1.0,
-        1.8,
-        1.0,
+        (0.0, game_controller.model.world_width),
+        (0.0, game_controller.model.world_height),
         1,
-        Vector2(world_width / 2, world_height / 2),
-        1.0,
-    ),
-    32.0,
-    32.0,
-    200.0,
-    1.0,
-    (0.0, game_controller.model.world_width),
-    (0.0, game_controller.model.world_height),
-    1,
-)
+    )
+
+
+# Fishy
+red_school_count: int = 10
+red_count: int = 50
+for x in range(red_school_count):
+    school: FishFactory = get_red_school_with_random_target(x)
+    for _ in range(red_count):
+        game_controller.add_game_entity(school.create_random_boid())
 
 green_school_1 = FishFactory(
     FishTypes.GREEN,
@@ -41,7 +57,7 @@ green_school_1 = FishFactory(
         1.0,
         1.8,
         1.0,
-        2,
+        red_school_count + 1,
         None,
         1.0,
     ),
@@ -62,7 +78,7 @@ yellow_school_1 = FishFactory(
         1.0,
         1.8,
         1.0,
-        3,
+        red_school_count + 2,
         None,
         1.0,
     ),
@@ -75,15 +91,12 @@ yellow_school_1 = FishFactory(
     1,
 )
 
-# Fishy
-red_count: int = 200
-yellow_count: int = 500
-green_count: int = 300
 
-for x in range(red_count):
-    game_controller.add_game_entity(red_school_1.create_random_boid())
+green_count: int = 300
 for x in range(green_count):
     game_controller.add_game_entity(green_school_1.create_random_boid())
+
+yellow_count: int = 300
 for x in range(yellow_count):
     game_controller.add_game_entity(yellow_school_1.create_random_boid())
 

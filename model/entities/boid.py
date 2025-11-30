@@ -93,7 +93,7 @@ class Boid(GameEntity):
         count_n: int = 0
         count_s: int = 0
         for other in others:
-            if self.group_id > 0 and self.group_id == other.group_id:
+            if self.group_id >= 0 and self.group_id == other.group_id:
                 # TODO add check to make sure not to check this entity against itself
                 d: float = self.position.distance_to(other.position)
                 if (d > 0) and d < self.cohere_distance:
